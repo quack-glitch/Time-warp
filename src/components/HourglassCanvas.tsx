@@ -82,9 +82,9 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
       const neckW = 10;
       const neckH = 14;
 
-      // 1. Stand & End Caps
+      // 1. Stand & End Caps (Seamlessly covering top and bottom rims)
       ctx.save();
-      const capW = bulbW * 1.25;
+      const capW = bulbW * 2 + 8;
       const capH = 8;
       const capRadius = 4;
 
@@ -100,17 +100,6 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
       ctx.beginPath();
       ctx.roundRect(cx - capW / 2, bottomY, capW, capH, capRadius);
       ctx.fill();
-
-      // Supporting Columns
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = currentTheme.border;
-      ctx.shadowBlur = 0;
-      ctx.beginPath();
-      ctx.moveTo(cx - capW / 2 + 4, topY);
-      ctx.lineTo(cx - capW / 2 + 4, bottomY);
-      ctx.moveTo(cx + capW / 2 - 4, topY);
-      ctx.lineTo(cx + capW / 2 - 4, bottomY);
-      ctx.stroke();
       ctx.restore();
 
       // Path traces
@@ -264,37 +253,40 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
       grainsRef.current = nextGrains;
       ctx.restore();
 
-      // 6. Crisp Outer Glass Contours
+      // 6. Crisp Outer Glass Walls (Curved left and right silhouettes only)
       ctx.save();
       ctx.strokeStyle = currentTheme.glassBorder;
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2.5;
       ctx.shadowColor = currentTheme.accentGlow;
       ctx.shadowBlur = 4;
 
-      traceTopChamber();
-      ctx.stroke();
-
-      traceBottomChamber();
-      ctx.stroke();
-
-      // Subtle specular glass reflection
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
-      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(cx - bulbW + 4, topY + 4);
+      // Left glass wall from top to bottom
+      ctx.moveTo(cx - bulbW, topY);
       ctx.bezierCurveTo(
-        cx - bulbW * 0.9, cy - neckH * 2.2,
-        cx - neckW * 1.5, cy - neckH * 0.8,
-        cx - neckW / 2, cy - 2
+        cx - bulbW * 0.95, cy - neckH * 2.5,
+        cx - neckW * 1.4, cy - neckH * 0.6,
+        cx - neckW / 2, cy
       );
-      ctx.moveTo(cx + neckW / 2, cy + 2);
       ctx.bezierCurveTo(
-        cx + neckW * 1.5, cy + neckH * 0.8,
-        cx + bulbW * 0.9, cy + neckH * 2.2,
-        cx + bulbW - 4, bottomY - 4
+        cx - neckW * 1.4, cy + neckH * 0.6,
+        cx - bulbW * 0.95, cy + neckH * 2.5,
+        cx - bulbW, bottomY
+      );
+
+      // Right glass wall from top to bottom
+      ctx.moveTo(cx + bulbW, topY);
+      ctx.bezierCurveTo(
+        cx + bulbW * 0.95, cy - neckH * 2.5,
+        cx + neckW * 1.4, cy - neckH * 0.6,
+        cx + neckW / 2, cy
+      );
+      ctx.bezierCurveTo(
+        cx + neckW * 1.4, cy + neckH * 0.6,
+        cx + bulbW * 0.95, cy + neckH * 2.5,
+        cx + bulbW, bottomY
       );
       ctx.stroke();
-
       ctx.restore();
 
       // Loop at 60 FPS
