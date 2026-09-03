@@ -50,7 +50,7 @@ The product is **not** primarily a task manager, calendar, or reminder applicati
   - 100% native Web Audio API — zero external audio files.
   - Toggle on/off with <kbd>M</kbd>.
 
-- **7 Curated Ambient Themes**:
+- **11 Curated Ambient Themes**:
   - **Obsidian Void**: OLED pitch black with radiant gold sand.
   - **Golden Hour**: Warm sunset dusk with rich amber sand dunes.
   - **Cyber Neon**: Deep galactic indigo with bioluminescent cyan sand.
@@ -58,6 +58,10 @@ The product is **not** primarily a task manager, calendar, or reminder applicati
   - **Emerald Canopy**: Deep forest pine/moss base with luminous pale emerald and mint sand.
   - **Solar Flare**: Rich midnight navy/charcoal base with vibrant crimson, burnt terracotta, and copper sand.
   - **Aurora Borealis**: Dark arctic indigo base with shifting teal, violet, and soft frost-white sand.
+  - **Cherry Grove**: Misty blossom pink, cool cyan, and deep twilight purple.
+  - **Ember Ash**: Volcanic charcoal base with warm orange-gold and pale yellow sand.
+  - **Jade Lotus**: Dark forest-moss black base with cool jade-green and soft mint-green sand.
+  - **Opal Rift**: Matte dark navy base with pearlescent pink, blue, and light purple sand.
 
 - **100% Local-First & PWA**:
   - Zero accounts, zero cloud servers, complete privacy.

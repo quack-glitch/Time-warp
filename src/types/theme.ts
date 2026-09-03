@@ -1,4 +1,4 @@
-export type ThemeId = 'void' | 'golden' | 'neon' | 'parchment' | 'emerald' | 'solar' | 'aurora';
+export type ThemeId = 'void' | 'golden' | 'neon' | 'parchment' | 'emerald' | 'solar' | 'aurora' | 'cherry' | 'ember' | 'jade' | 'opal';
 
 export interface ThemeColors {
   id: ThemeId;
@@ -153,5 +153,81 @@ export const THEMES: Record<ThemeId, ThemeColors> = {
     sandStream: '#2dd4bf',
     sandGlow: 'rgba(45, 212, 191, 0.5)',
     sandGrains: ['#2dd4bf', '#a855f7', '#38bdf8', '#e0e7ff', '#ffffff']
+  },
+  cherry: {
+    id: 'cherry',
+    name: 'Cherry Grove',
+    subtitle: 'Misty blossom pink, cool cyan & deep twilight purple',
+    isDark: true,
+    bg: '#0d0714',
+    bgSecondary: '#170c24',
+    cardBg: 'rgba(28, 14, 42, 0.85)',
+    border: 'rgba(244, 114, 182, 0.22)',
+    glassBorder: 'rgba(244, 114, 182, 0.38)',
+    textPrimary: '#fdf2f8',
+    textSecondary: '#f472b6',
+    textMuted: '#831843',
+    accent: '#f472b6',
+    accentGlow: 'rgba(244, 114, 182, 0.45)',
+    sandStream: '#fbcfe8',
+    sandGlow: 'rgba(251, 207, 232, 0.45)',
+    sandGrains: ['#f472b6', '#22d3ee', '#c084fc', '#fbcfe8', '#ffffff']
+  },
+  ember: {
+    id: 'ember',
+    name: 'Ember Ash',
+    subtitle: 'Volcanic charcoal base with warm orange-gold & pale yellow sand',
+    isDark: true,
+    bg: '#0c0a09',
+    bgSecondary: '#1c1917',
+    cardBg: 'rgba(28, 25, 23, 0.85)',
+    border: 'rgba(245, 158, 11, 0.22)',
+    glassBorder: 'rgba(245, 158, 11, 0.38)',
+    textPrimary: '#fef3c7',
+    textSecondary: '#fcd34d',
+    textMuted: '#78350f',
+    accent: '#f59e0b',
+    accentGlow: 'rgba(245, 158, 11, 0.45)',
+    sandStream: '#fbbf24',
+    sandGlow: 'rgba(251, 191, 36, 0.45)',
+    sandGrains: ['#f59e0b', '#d97706', '#fef08a', '#fde047', '#ffedd5']
+  },
+  jade: {
+    id: 'jade',
+    name: 'Jade Lotus',
+    subtitle: 'Dark forest-moss black base with cool jade & tranquil mint sand',
+    isDark: true,
+    bg: '#040d08',
+    bgSecondary: '#09170f',
+    cardBg: 'rgba(11, 28, 19, 0.85)',
+    border: 'rgba(20, 184, 166, 0.22)',
+    glassBorder: 'rgba(20, 184, 166, 0.38)',
+    textPrimary: '#f0fdf4',
+    textSecondary: '#5eead4',
+    textMuted: '#134e4a',
+    accent: '#14b8a6',
+    accentGlow: 'rgba(20, 184, 166, 0.45)',
+    sandStream: '#2dd4bf',
+    sandGlow: 'rgba(45, 212, 191, 0.45)',
+    sandGrains: ['#14b8a6', '#0d9488', '#2dd4bf', '#99f6e4', '#e6fffa']
+  },
+  opal: {
+    id: 'opal',
+    name: 'Opal Rift',
+    subtitle: 'Matte dark navy base with pearlescent pink, blue & violet sand',
+    isDark: true,
+    bg: '#070a14',
+    bgSecondary: '#0f1426',
+    cardBg: 'rgba(18, 24, 48, 0.85)',
+    border: 'rgba(168, 85, 247, 0.22)',
+    glassBorder: 'rgba(192, 132, 252, 0.38)',
+    textPrimary: '#faf5ff',
+    textSecondary: '#d8b4fe',
+    textMuted: '#581c87',
+    accent: '#c084fc',
+    accentGlow: 'rgba(192, 132, 252, 0.45)',
+    sandStream: '#e879f9',
+    sandGlow: 'rgba(232, 121, 249, 0.45)',
+    sandGrains: ['#f472b6', '#60a5fa', '#c084fc', '#e879f9', '#ffffff']
   }
 };
