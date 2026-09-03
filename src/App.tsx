@@ -18,9 +18,13 @@ export const App: React.FC = () => {
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | undefined>(undefined);
+  const [manualZen, setManualZen] = useState(false);
 
   const theme = THEMES[appState.theme] || THEMES.void;
   const isIdle = useIdle(4000);
+
+  // Active Zen mode is triggered by either idle timeout or manual 'Z' toggle
+  const isZenActive = manualZen || isIdle;
 
   // Active Goal lookup
   const activeGoal =
@@ -58,29 +62,7 @@ export const App: React.FC = () => {
     };
   }, [appState.soundEnabled, appState.soundVolume, countdown.isExpired]);
 
-  // Keyboard Shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
-
-      if (e.key === 't' || e.key === 'T') {
-        cycleTheme();
-      } else if (e.key === 'm' || e.key === 'M') {
-        toggleSound();
-      } else if (e.key === 'f' || e.key === 'F') {
-        toggleFullscreen();
-      } else if (['1', '2', '3', '4', '5'].includes(e.key)) {
-        const index = parseInt(e.key, 10) - 1;
-        if (appState.goals[index]) {
-          setAppState((prev) => ({ ...prev, activeGoalId: prev.goals[index].id }));
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [appState.goals]);
-
+  // Actions
   const cycleTheme = useCallback(() => {
     const themeKeys: ThemeId[] = ['void', 'golden', 'neon', 'parchment'];
     setAppState((prev) => {
@@ -100,6 +82,39 @@ export const App: React.FC = () => {
       document.exitFullscreen().catch(() => {});
     }
   }, []);
+
+  const toggleZenMode = useCallback(() => {
+    setManualZen((prev) => !prev);
+  }, []);
+
+  // Keyboard Shortcuts: 'F' (Fullscreen), 'Z' (Zen Mode), 'Space' (Sound Toggle)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
+
+      // Space: Toggle Sound
+      if (e.code === 'Space' || e.key === ' ') {
+        e.preventDefault();
+        toggleSound();
+      } else if (e.key === 'z' || e.key === 'Z') {
+        toggleZenMode();
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullscreen();
+      } else if (e.key === 't' || e.key === 'T') {
+        cycleTheme();
+      } else if (e.key === 'm' || e.key === 'M') {
+        toggleSound();
+      } else if (['1', '2', '3', '4', '5'].includes(e.key)) {
+        const index = parseInt(e.key, 10) - 1;
+        if (appState.goals[index]) {
+          setAppState((prev) => ({ ...prev, activeGoalId: prev.goals[index].id }));
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [appState.goals, toggleSound, toggleZenMode, toggleFullscreen, cycleTheme]);
 
   const handleSelectGoal = (id: string) => {
     setAppState((prev) => ({ ...prev, activeGoalId: id }));
@@ -160,7 +175,7 @@ export const App: React.FC = () => {
       {/* TOP BAR: Goal Switcher & Zen Controls */}
       <header
         className={`relative z-20 pt-3 pb-2 px-4 sm:px-6 flex items-center justify-between flex-shrink-0 transition-opacity duration-700 ${
-          isIdle ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          isZenActive ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
       >
         <div className="flex items-center gap-2">
@@ -214,11 +229,13 @@ export const App: React.FC = () => {
       {/* BOTTOM FOOTER: Keyboard Hints */}
       <footer
         className={`relative z-20 pb-3 pt-1 px-4 sm:px-6 flex items-center justify-between text-[10px] sm:text-[11px] font-mono flex-shrink-0 transition-opacity duration-700 ${
-          isIdle ? 'opacity-0 pointer-events-none' : 'opacity-40 hover:opacity-100'
+          isZenActive ? 'opacity-0 pointer-events-none' : 'opacity-40 hover:opacity-100'
         }`}
         style={{ color: theme.textSecondary }}
       >
-        <span>Press <kbd className="px-1 py-0.5 rounded bg-white/10 font-bold">F</kbd> for Fullscreen · <kbd className="px-1 py-0.5 rounded bg-white/10 font-bold">T</kbd> for Theme · <kbd className="px-1 py-0.5 rounded bg-white/10 font-bold">M</kbd> for Sound</span>
+        <span>
+          <kbd className="px-1 py-0.5 rounded bg-white/10 font-bold">F</kbd> Fullscreen · <kbd className="px-1 py-0.5 rounded bg-white/10 font-bold">Z</kbd> Zen Mode · <kbd className="px-1 py-0.5 rounded bg-white/10 font-bold">Space</kbd> Sound · <kbd className="px-1 py-0.5 rounded bg-white/10 font-bold">T</kbd> Theme
+        </span>
         <span>Make time visible.</span>
       </footer>
 

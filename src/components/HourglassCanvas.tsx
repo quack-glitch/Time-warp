@@ -2,8 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import { ThemeColors } from '../types/theme';
 
 interface HourglassCanvasProps {
-  progressPercent: number; // 0 to 100 (elapsed)
-  remainingPercent: number; // 100 to 0 (remaining)
+  progressPercent: number;
+  remainingPercent: number;
   isExpired: boolean;
   theme: ThemeColors;
 }
@@ -29,11 +29,17 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
   const grainsRef = useRef<Grain[]>([]);
   const animFrameRef = useRef<number | null>(null);
 
+  // Keep latest props in a ref so the 60 FPS requestAnimationFrame loop never re-initializes on state changes
+  const propsRef = useRef({ progressPercent, remainingPercent, isExpired, theme });
+  useEffect(() => {
+    propsRef.current = { progressPercent, remainingPercent, isExpired, theme };
+  }, [progressPercent, remainingPercent, isExpired, theme]);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
     if (!canvas || !container) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
     let width = 0;
@@ -57,33 +63,34 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
     setupDpi();
     window.addEventListener('resize', setupDpi);
 
-    const colors = theme.sandGrains;
-
     const render = () => {
+      const { progressPercent: prog, remainingPercent: rem, isExpired: exp, theme: currentTheme } = propsRef.current;
+      const colors = currentTheme.sandGrains;
+
       ctx.clearRect(0, 0, width, height);
 
       const cx = width / 2;
       const cy = height / 2;
-      
-      // Geometry calculations
+
+      // Frame bounds
       const totalH = Math.min(height * 0.88, 220);
       const halfH = totalH / 2;
       const topY = cy - halfH;
       const bottomY = cy + halfH;
-      
+
       const bulbW = Math.min(width * 0.45, 85);
       const neckW = 10;
       const neckH = 14;
 
-      // 1. Draw Hourglass Stand & Wooden/Metallic End Caps
+      // 1. Stand & End Caps
       ctx.save();
       const capW = bulbW * 1.25;
       const capH = 8;
       const capRadius = 4;
 
       // Top Cap
-      ctx.fillStyle = theme.accent;
-      ctx.shadowColor = theme.accentGlow;
+      ctx.fillStyle = currentTheme.accent;
+      ctx.shadowColor = currentTheme.accentGlow;
       ctx.shadowBlur = 8;
       ctx.beginPath();
       ctx.roundRect(cx - capW / 2, topY - capH, capW, capH, capRadius);
@@ -94,9 +101,9 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
       ctx.roundRect(cx - capW / 2, bottomY, capW, capH, capRadius);
       ctx.fill();
 
-      // Delicate Side Supporting Columns
+      // Supporting Columns
       ctx.lineWidth = 2;
-      ctx.strokeStyle = theme.border;
+      ctx.strokeStyle = currentTheme.border;
       ctx.shadowBlur = 0;
       ctx.beginPath();
       ctx.moveTo(cx - capW / 2 + 4, topY);
@@ -106,7 +113,7 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
       ctx.stroke();
       ctx.restore();
 
-      // Helper function to trace upper chamber inner glass wall
+      // Path traces
       const traceTopChamber = () => {
         ctx.beginPath();
         ctx.moveTo(cx - bulbW, topY);
@@ -125,7 +132,6 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
         ctx.closePath();
       };
 
-      // Helper function to trace lower chamber inner glass wall
       const traceBottomChamber = () => {
         ctx.beginPath();
         ctx.moveTo(cx - neckW / 2, cy);
@@ -144,7 +150,7 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
         ctx.closePath();
       };
 
-      // 2. Inner Glass Ambient Volume Glow
+      // 2. Glass Volume Ambient Sheen
       ctx.save();
       traceTopChamber();
       ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
@@ -154,13 +160,13 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
       ctx.fill();
       ctx.restore();
 
-      // 3. UPPER CHAMBER SAND (Clipped to inner glass — zero leaking or gaps!)
-      if (!isExpired && remainingPercent > 0.05) {
+      // 3. Upper Chamber Sand (Clipped to inner glass)
+      if (!exp && rem > 0.05) {
         ctx.save();
         traceTopChamber();
-        ctx.clip(); // CLIPS TO EXACT GLASS CONTOUR!
+        ctx.clip();
 
-        const topRatio = remainingPercent / 100;
+        const topRatio = rem / 100;
         const availableHeight = halfH - neckH;
         const sandH = availableHeight * topRatio;
         const sandSurfaceY = cy - neckH - sandH;
@@ -172,7 +178,6 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
 
         ctx.fillStyle = sandGrad;
         ctx.beginPath();
-        // Funnel-shaped surface dipping slightly in the center
         ctx.moveTo(cx - bulbW * 1.2, sandSurfaceY);
         ctx.quadraticCurveTo(cx, sandSurfaceY + 5, cx + bulbW * 1.2, sandSurfaceY);
         ctx.lineTo(cx + bulbW * 1.2, cy);
@@ -183,12 +188,12 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
         ctx.restore();
       }
 
-      // 4. LOWER CHAMBER ACCUMULATING DUNE (Clipped to lower glass!)
+      // 4. Lower Chamber Dune (Clipped to lower glass)
       ctx.save();
       traceBottomChamber();
-      ctx.clip(); // CLIPS TO LOWER GLASS CONTOUR!
+      ctx.clip();
 
-      const botRatio = Math.min(1, progressPercent / 100);
+      const botRatio = Math.min(1, prog / 100);
       if (botRatio > 0.005) {
         const availableHeight = halfH - neckH;
         const duneH = availableHeight * Math.pow(botRatio, 0.82);
@@ -201,7 +206,6 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
 
         ctx.fillStyle = duneGrad;
         ctx.beginPath();
-        // Natural parabolic sand mound with crest at center
         ctx.moveTo(cx - bulbW * 1.2, bottomY);
         ctx.quadraticCurveTo(cx - bulbW * 0.35, dunePeakY + 2, cx, dunePeakY);
         ctx.quadraticCurveTo(cx + bulbW * 0.35, dunePeakY + 2, cx + bulbW * 1.2, bottomY);
@@ -210,14 +214,13 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
       }
       ctx.restore();
 
-      // 5. STREAM & FALLING SAND GRAINS
-      const dunePeakY = bottomY - (halfH - neckH) * Math.pow(Math.min(1, progressPercent / 100), 0.82);
-      if (!isExpired && remainingPercent > 0.1) {
-        // Continuous central thread
+      // 5. Sand Stream & Falling Particles
+      const dunePeakY = bottomY - (halfH - neckH) * Math.pow(Math.min(1, prog / 100), 0.82);
+      if (!exp && rem > 0.1) {
         ctx.save();
-        ctx.strokeStyle = theme.sandStream;
+        ctx.strokeStyle = currentTheme.sandStream;
         ctx.lineWidth = 2.2;
-        ctx.shadowColor = theme.sandGlow;
+        ctx.shadowColor = currentTheme.sandGlow;
         ctx.shadowBlur = 6;
         ctx.beginPath();
         ctx.moveTo(cx, cy - 2);
@@ -225,7 +228,7 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
         ctx.stroke();
         ctx.restore();
 
-        // Spawn falling grains
+        // Spawn falling grains (capped to 30 particles max for ultra-low frame budget)
         if (grainsRef.current.length < 30) {
           for (let i = 0; i < 2; i++) {
             grainsRef.current.push({
@@ -241,7 +244,7 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
         }
       }
 
-      // Render & update grains
+      // Update falling grains
       ctx.save();
       const nextGrains: Grain[] = [];
       for (const g of grainsRef.current) {
@@ -261,11 +264,11 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
       grainsRef.current = nextGrains;
       ctx.restore();
 
-      // 6. CRISP OUTER GLASS SILHOUETTE (Drawn ON TOP for crystal sharpness)
+      // 6. Crisp Outer Glass Contours
       ctx.save();
-      ctx.strokeStyle = theme.glassBorder;
+      ctx.strokeStyle = currentTheme.glassBorder;
       ctx.lineWidth = 2;
-      ctx.shadowColor = theme.accentGlow;
+      ctx.shadowColor = currentTheme.accentGlow;
       ctx.shadowBlur = 4;
 
       traceTopChamber();
@@ -274,18 +277,16 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
       traceBottomChamber();
       ctx.stroke();
 
-      // Delicate inner glass highlights
+      // Subtle specular glass reflection
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
       ctx.lineWidth = 1;
       ctx.beginPath();
-      // Upper left glass reflection
       ctx.moveTo(cx - bulbW + 4, topY + 4);
       ctx.bezierCurveTo(
         cx - bulbW * 0.9, cy - neckH * 2.2,
         cx - neckW * 1.5, cy - neckH * 0.8,
         cx - neckW / 2, cy - 2
       );
-      // Lower right glass reflection
       ctx.moveTo(cx + neckW / 2, cy + 2);
       ctx.bezierCurveTo(
         cx + neckW * 1.5, cy + neckH * 0.8,
@@ -296,16 +297,20 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
 
       ctx.restore();
 
+      // Loop at 60 FPS
       animFrameRef.current = requestAnimationFrame(render);
     };
 
-    render();
+    animFrameRef.current = requestAnimationFrame(render);
 
     return () => {
       window.removeEventListener('resize', setupDpi);
-      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current);
+        animFrameRef.current = null;
+      }
     };
-  }, [progressPercent, remainingPercent, isExpired, theme]);
+  }, []); // Only runs once on mount, reading live state from propsRef!
 
   return (
     <div
