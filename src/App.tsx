@@ -44,6 +44,18 @@ export const App: React.FC = () => {
     } else {
       audioEngine.stopSandWhisper();
     }
+
+    const handleFirstGesture = () => {
+      if (appState.soundEnabled && !countdown.isExpired) {
+        audioEngine.startSandWhisper();
+      }
+    };
+    window.addEventListener('click', handleFirstGesture, { once: true });
+    window.addEventListener('keydown', handleFirstGesture, { once: true });
+    return () => {
+      window.removeEventListener('click', handleFirstGesture);
+      window.removeEventListener('keydown', handleFirstGesture);
+    };
   }, [appState.soundEnabled, appState.soundVolume, countdown.isExpired]);
 
   // Keyboard Shortcuts
