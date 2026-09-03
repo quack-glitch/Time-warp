@@ -75,7 +75,8 @@ export const App: React.FC = () => {
       'cherry',
       'ember',
       'jade',
-      'opal'
+      'opal',
+      'frost'
     ];
     setAppState((prev) => {
       const nextIdx = (themeKeys.indexOf(prev.theme) + 1) % themeKeys.length;

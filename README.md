@@ -50,15 +50,16 @@ The product is **not** primarily a task manager, calendar, or reminder applicati
   - 100% native Web Audio API — zero external audio files.
   - Toggle on/off with <kbd>M</kbd>.
 
-- **11 Curated Ambient Themes**:
-  - **Obsidian Void**: OLED pitch black with radiant gold sand.
+- **12 Curated Ambient Themes**:
+  - **Clean Parchment**: Warm off-white ceramic background, charcoal frame, and deep slate sand (dedicated light theme).
+  - **Obsidian Void**: Pitch OLED black background with metallic warm gold sand.
+  - **Cyber Neon**: Deep synthetic violet base with electric cyan and magenta sand.
+  - **Solar Flare**: Rich midnight charcoal base with radiant crimson, burnt terracotta, and molten copper sand.
+  - **Cherry Grove**: Muted twilight lavender base with soft sakura pink and pale teal mist sand.
+  - **Emerald Canopy**: Ink-black pine base with phosphorescent mint and pale jade sand.
+  - **Glacial Frost**: Deep arctic navy base with stark icy-white and faint glacial blue sand.
   - **Golden Hour**: Warm sunset dusk with rich amber sand dunes.
-  - **Cyber Neon**: Deep galactic indigo with bioluminescent cyan sand.
-  - **Clean Parchment**: Ceramic daylight with charcoal ink grains.
-  - **Emerald Canopy**: Deep forest pine/moss base with luminous pale emerald and mint sand.
-  - **Solar Flare**: Rich midnight navy/charcoal base with vibrant crimson, burnt terracotta, and copper sand.
   - **Aurora Borealis**: Dark arctic indigo base with shifting teal, violet, and soft frost-white sand.
-  - **Cherry Grove**: Misty blossom pink, cool cyan, and deep twilight purple.
   - **Ember Ash**: Volcanic charcoal base with warm orange-gold and pale yellow sand.
   - **Jade Lotus**: Dark forest-moss black base with cool jade-green and soft mint-green sand.
   - **Opal Rift**: Matte dark navy base with pearlescent pink, blue, and light purple sand.
@@ -77,7 +78,7 @@ The product is **not** primarily a task manager, calendar, or reminder applicati
 | <kbd>F</kbd> | Toggle Fullscreen ambient display |
 | <kbd>Z</kbd> | Manually toggle Zen Mode (hide/show chrome) |
 | <kbd>Space</kbd> / <kbd>M</kbd> | Toggle ambient audio (Sand trickle & tick) |
-| <kbd>T</kbd> | Cycle through all 7 ambient themes |
+| <kbd>T</kbd> | Cycle through all 12 ambient themes |
 | <kbd>1</kbd>–<kbd>5</kbd> | Switch between curated goals |
 | <kbd>Esc</kbd> | Exit fullscreen or close modal |
 
