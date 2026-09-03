@@ -86,7 +86,7 @@ The product is **not** primarily a task manager, calendar, or reminder applicati
 - **Styling**: Tailwind CSS v4, CSS Custom Properties
 - **Visuals**: HTML5 Canvas 2D Physics Render Loop
 - **Audio**: Web Audio API Procedural Synthesizer
-- **Calendars**: `date-fns`, `nepali-date-converter`
+- **Calendars**: Native `Intl.DateTimeFormat` (A.D.) + `nepali-date-converter` (B.S.)
 - **Icons**: Lucide React
 
 ---

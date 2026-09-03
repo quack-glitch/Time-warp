@@ -2,7 +2,6 @@ import React from 'react';
 import { Goal } from '../types/goal';
 import { ThemeColors } from '../types/theme';
 import { adToBs } from '../services/bs-converter';
-import { format } from 'date-fns';
 import { Calendar, Sparkles, Edit3 } from 'lucide-react';
 
 interface GoalHeaderProps {
@@ -13,7 +12,14 @@ interface GoalHeaderProps {
 
 export const GoalHeader: React.FC<GoalHeaderProps> = ({ goal, theme, onEdit }) => {
   const deadlineDate = new Date(goal.deadline);
-  const formattedAD = format(deadlineDate, 'MMMM d, yyyy · h:mm a');
+  const formattedAD = new Intl.DateTimeFormat('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  }).format(deadlineDate).replace(' at ', ' · ');
   const formattedBS = adToBs(deadlineDate);
 
   return (

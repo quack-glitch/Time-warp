@@ -11,7 +11,6 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "date-fns": "^4.4.0",
     "lucide-react": "^1.33.0",
     "nepali-date-converter": "^3.4.0",
     "react": "^19.2.8",
