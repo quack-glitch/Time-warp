@@ -1,0 +1,17 @@
+{
+  "name": "Time Warp — Personal Deadline Clock",
+  "short_name": "Time Warp",
+  "description": "Give your goal a deadline. Make the remaining time visible.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050507",
+  "theme_color": "#eab308",
+  "icons": [
+    {
+      "src": "/hourglass.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
