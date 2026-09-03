@@ -61,7 +61,6 @@ export const App: React.FC = () => {
   // Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore when inside input/modal
       if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
 
       if (e.key === 't' || e.key === 'T') {
@@ -108,13 +107,11 @@ export const App: React.FC = () => {
 
   const handleSaveGoal = (goalData: Partial<Goal>) => {
     if (editingGoal) {
-      // Update existing
       setAppState((prev) => ({
         ...prev,
         goals: prev.goals.map((g) => (g.id === editingGoal.id ? { ...g, ...goalData } : g))
       }));
     } else {
-      // Add new
       const newGoal: Goal = {
         id: 'goal-' + Date.now(),
         title: goalData.title || 'Meaningful Life Goal',
@@ -149,20 +146,20 @@ export const App: React.FC = () => {
 
   return (
     <div
-      className="relative w-screen h-screen flex flex-col justify-between overflow-hidden transition-colors duration-700"
+      className="relative w-full min-h-screen h-screen flex flex-col justify-between overflow-x-hidden overflow-y-auto transition-colors duration-700"
       style={{ backgroundColor: theme.bg }}
     >
-      {/* Dynamic Ambient Background Aura */}
+      {/* Dynamic Ambient Background Glow */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-40 blur-3xl transition-opacity duration-1000"
+        className="absolute inset-0 pointer-events-none opacity-30 blur-3xl transition-opacity duration-1000"
         style={{
           background: `radial-gradient(circle at 50% 45%, ${theme.sandGlow} 0%, transparent 65%)`
         }}
       />
 
-      {/* TOP BAR: Goal Switcher & Zen Controls (Fades in Zen mode) */}
+      {/* TOP BAR: Goal Switcher & Zen Controls */}
       <header
-        className={`relative z-20 pt-4 px-6 flex items-center justify-between transition-opacity duration-700 ${
+        className={`relative z-20 pt-3 pb-2 px-4 sm:px-6 flex items-center justify-between flex-shrink-0 transition-opacity duration-700 ${
           isIdle ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
       >
@@ -193,9 +190,8 @@ export const App: React.FC = () => {
         />
       </header>
 
-      {/* CENTER STAGE: Goal Title, Glass Hourglass, Bold Countdown Numbers */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 max-w-4xl mx-auto w-full">
-        {/* Goal Header */}
+      {/* CENTER STAGE: Goal Title, Glass Hourglass, Bold Countdown */}
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 max-w-4xl mx-auto w-full my-auto py-2">
         <GoalHeader
           goal={activeGoal}
           theme={theme}
@@ -205,7 +201,6 @@ export const App: React.FC = () => {
           }}
         />
 
-        {/* 2D Particle Canvas Hourglass */}
         <HourglassCanvas
           progressPercent={countdown.progressPercent}
           remainingPercent={countdown.remainingPercent}
@@ -213,13 +208,12 @@ export const App: React.FC = () => {
           theme={theme}
         />
 
-        {/* High-Contrast Glanceable Countdown Hero */}
         <CountdownDisplay countdown={countdown} theme={theme} />
       </main>
 
-      {/* BOTTOM FOOTER: Zen hint & Status */}
+      {/* BOTTOM FOOTER: Keyboard Hints */}
       <footer
-        className={`relative z-20 pb-4 px-6 flex items-center justify-between text-[11px] font-mono transition-opacity duration-700 ${
+        className={`relative z-20 pb-3 pt-1 px-4 sm:px-6 flex items-center justify-between text-[10px] sm:text-[11px] font-mono flex-shrink-0 transition-opacity duration-700 ${
           isIdle ? 'opacity-0 pointer-events-none' : 'opacity-40 hover:opacity-100'
         }`}
         style={{ color: theme.textSecondary }}
