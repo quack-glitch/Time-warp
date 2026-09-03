@@ -1,4 +1,4 @@
-export type ThemeId = 'void' | 'golden' | 'neon' | 'parchment' | 'emerald' | 'solar' | 'aurora' | 'cherry' | 'ember' | 'jade' | 'opal' | 'frost';
+export type ThemeId = 'parchment' | 'void' | 'neon' | 'solar' | 'cherry' | 'emerald' | 'frost';
 
 export interface ThemeColors {
   id: ThemeId;
@@ -21,6 +21,25 @@ export interface ThemeColors {
 }
 
 export const THEMES: Record<ThemeId, ThemeColors> = {
+  parchment: {
+    id: 'parchment',
+    name: 'Clean Parchment',
+    subtitle: 'Warm off-white ceramic background, charcoal frame & deep slate sand',
+    isDark: false,
+    bg: '#fcfaf6',
+    bgSecondary: '#f2eee6',
+    cardBg: 'rgba(255, 255, 255, 0.9)',
+    border: 'rgba(68, 64, 60, 0.12)',
+    glassBorder: 'rgba(68, 64, 60, 0.35)',
+    textPrimary: '#0f172a',
+    textSecondary: '#475569',
+    textMuted: '#94a3b8',
+    accent: '#334155',
+    accentGlow: 'rgba(51, 65, 85, 0.2)',
+    sandStream: '#1e293b',
+    sandGlow: 'rgba(30, 41, 59, 0.25)',
+    sandGrains: ['#1e293b', '#334155', '#475569', '#64748b', '#0f172a']
+  },
   void: {
     id: 'void',
     name: 'Obsidian Void',
@@ -39,25 +58,6 @@ export const THEMES: Record<ThemeId, ThemeColors> = {
     sandStream: '#fde047',
     sandGlow: 'rgba(253, 224, 71, 0.45)',
     sandGrains: ['#fbbf24', '#f59e0b', '#d97706', '#fef08a', '#ffffff']
-  },
-  golden: {
-    id: 'golden',
-    name: 'Golden Hour',
-    subtitle: 'Warm sunset dusk & amber sand dunes',
-    isDark: true,
-    bg: '#140c06',
-    bgSecondary: '#20130a',
-    cardBg: 'rgba(36, 21, 12, 0.8)',
-    border: 'rgba(249, 115, 22, 0.15)',
-    glassBorder: 'rgba(249, 115, 22, 0.35)',
-    textPrimary: '#fff7ed',
-    textSecondary: '#fdba74',
-    textMuted: '#9a3412',
-    accent: '#f97316',
-    accentGlow: 'rgba(249, 115, 22, 0.4)',
-    sandStream: '#fb923c',
-    sandGlow: 'rgba(251, 146, 60, 0.45)',
-    sandGrains: ['#fb923c', '#f97316', '#ea580c', '#fed7aa', '#ffedd5']
   },
   neon: {
     id: 'neon',
@@ -78,44 +78,6 @@ export const THEMES: Record<ThemeId, ThemeColors> = {
     sandGlow: 'rgba(34, 211, 238, 0.5)',
     sandGrains: ['#06b6d4', '#d946ef', '#ec4899', '#22d3ee', '#a855f7']
   },
-  parchment: {
-    id: 'parchment',
-    name: 'Clean Parchment',
-    subtitle: 'Warm off-white ceramic background, charcoal frame & deep slate sand',
-    isDark: false,
-    bg: '#fcfaf6',
-    bgSecondary: '#f2eee6',
-    cardBg: 'rgba(255, 255, 255, 0.9)',
-    border: 'rgba(68, 64, 60, 0.12)',
-    glassBorder: 'rgba(68, 64, 60, 0.35)',
-    textPrimary: '#0f172a',
-    textSecondary: '#475569',
-    textMuted: '#94a3b8',
-    accent: '#334155',
-    accentGlow: 'rgba(51, 65, 85, 0.2)',
-    sandStream: '#1e293b',
-    sandGlow: 'rgba(30, 41, 59, 0.25)',
-    sandGrains: ['#1e293b', '#334155', '#475569', '#64748b', '#0f172a']
-  },
-  emerald: {
-    id: 'emerald',
-    name: 'Emerald Canopy',
-    subtitle: 'Ink-black pine base with phosphorescent mint & pale jade sand',
-    isDark: true,
-    bg: '#030c07',
-    bgSecondary: '#07180e',
-    cardBg: 'rgba(7, 24, 14, 0.85)',
-    border: 'rgba(16, 185, 129, 0.2)',
-    glassBorder: 'rgba(16, 185, 129, 0.38)',
-    textPrimary: '#ecfdf5',
-    textSecondary: '#6ee7b7',
-    textMuted: '#065f46',
-    accent: '#10b981',
-    accentGlow: 'rgba(16, 185, 129, 0.45)',
-    sandStream: '#34d399',
-    sandGlow: 'rgba(52, 211, 153, 0.45)',
-    sandGrains: ['#34d399', '#6ee7b7', '#a7f3d0', '#10b981', '#059669']
-  },
   solar: {
     id: 'solar',
     name: 'Solar Flare',
@@ -134,25 +96,6 @@ export const THEMES: Record<ThemeId, ThemeColors> = {
     sandStream: '#fb7185',
     sandGlow: 'rgba(251, 113, 133, 0.45)',
     sandGrains: ['#f43f5e', '#ea580c', '#c2410c', '#fdba74', '#fb923c']
-  },
-  aurora: {
-    id: 'aurora',
-    name: 'Aurora Borealis',
-    subtitle: 'Dark arctic indigo base with shifting teal, violet & frost-white sand',
-    isDark: true,
-    bg: '#060a16',
-    bgSecondary: '#0c1328',
-    cardBg: 'rgba(12, 19, 40, 0.8)',
-    border: 'rgba(147, 51, 234, 0.2)',
-    glassBorder: 'rgba(45, 212, 191, 0.35)',
-    textPrimary: '#f5f3ff',
-    textSecondary: '#c4b5fd',
-    textMuted: '#6b21a8',
-    accent: '#8b5cf6',
-    accentGlow: 'rgba(139, 92, 246, 0.45)',
-    sandStream: '#2dd4bf',
-    sandGlow: 'rgba(45, 212, 191, 0.5)',
-    sandGrains: ['#2dd4bf', '#a855f7', '#38bdf8', '#e0e7ff', '#ffffff']
   },
   cherry: {
     id: 'cherry',
@@ -173,62 +116,24 @@ export const THEMES: Record<ThemeId, ThemeColors> = {
     sandGlow: 'rgba(251, 207, 232, 0.45)',
     sandGrains: ['#f472b6', '#fbcfe8', '#5eead4', '#99f6e4', '#ffffff']
   },
-  ember: {
-    id: 'ember',
-    name: 'Ember Ash',
-    subtitle: 'Volcanic charcoal base with warm orange-gold & pale yellow sand',
+  emerald: {
+    id: 'emerald',
+    name: 'Emerald Canopy',
+    subtitle: 'Ink-black pine base with phosphorescent mint & pale jade sand',
     isDark: true,
-    bg: '#0c0a09',
-    bgSecondary: '#1c1917',
-    cardBg: 'rgba(28, 25, 23, 0.85)',
-    border: 'rgba(245, 158, 11, 0.22)',
-    glassBorder: 'rgba(245, 158, 11, 0.38)',
-    textPrimary: '#fef3c7',
-    textSecondary: '#fcd34d',
-    textMuted: '#78350f',
-    accent: '#f59e0b',
-    accentGlow: 'rgba(245, 158, 11, 0.45)',
-    sandStream: '#fbbf24',
-    sandGlow: 'rgba(251, 191, 36, 0.45)',
-    sandGrains: ['#f59e0b', '#d97706', '#fef08a', '#fde047', '#ffedd5']
-  },
-  jade: {
-    id: 'jade',
-    name: 'Jade Lotus',
-    subtitle: 'Dark forest-moss black base with cool jade & tranquil mint sand',
-    isDark: true,
-    bg: '#040d08',
-    bgSecondary: '#09170f',
-    cardBg: 'rgba(11, 28, 19, 0.85)',
-    border: 'rgba(20, 184, 166, 0.22)',
-    glassBorder: 'rgba(20, 184, 166, 0.38)',
-    textPrimary: '#f0fdf4',
-    textSecondary: '#5eead4',
-    textMuted: '#134e4a',
-    accent: '#14b8a6',
-    accentGlow: 'rgba(20, 184, 166, 0.45)',
-    sandStream: '#2dd4bf',
-    sandGlow: 'rgba(45, 212, 191, 0.45)',
-    sandGrains: ['#14b8a6', '#0d9488', '#2dd4bf', '#99f6e4', '#e6fffa']
-  },
-  opal: {
-    id: 'opal',
-    name: 'Opal Rift',
-    subtitle: 'Matte dark navy base with pearlescent pink, blue & violet sand',
-    isDark: true,
-    bg: '#070a14',
-    bgSecondary: '#0f1426',
-    cardBg: 'rgba(18, 24, 48, 0.85)',
-    border: 'rgba(168, 85, 247, 0.22)',
-    glassBorder: 'rgba(192, 132, 252, 0.38)',
-    textPrimary: '#faf5ff',
-    textSecondary: '#d8b4fe',
-    textMuted: '#581c87',
-    accent: '#c084fc',
-    accentGlow: 'rgba(192, 132, 252, 0.45)',
-    sandStream: '#e879f9',
-    sandGlow: 'rgba(232, 121, 249, 0.45)',
-    sandGrains: ['#f472b6', '#60a5fa', '#c084fc', '#e879f9', '#ffffff']
+    bg: '#030c07',
+    bgSecondary: '#07180e',
+    cardBg: 'rgba(7, 24, 14, 0.85)',
+    border: 'rgba(16, 185, 129, 0.2)',
+    glassBorder: 'rgba(16, 185, 129, 0.38)',
+    textPrimary: '#ecfdf5',
+    textSecondary: '#6ee7b7',
+    textMuted: '#065f46',
+    accent: '#10b981',
+    accentGlow: 'rgba(16, 185, 129, 0.45)',
+    sandStream: '#34d399',
+    sandGlow: 'rgba(52, 211, 153, 0.45)',
+    sandGrains: ['#34d399', '#6ee7b7', '#a7f3d0', '#10b981', '#059669']
   },
   frost: {
     id: 'frost',

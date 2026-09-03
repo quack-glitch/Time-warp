@@ -41,9 +41,11 @@ export function loadState(): TimeWarpState {
     if (!parsed.goals || !Array.isArray(parsed.goals) || parsed.goals.length === 0) {
       return DEFAULT_STATE;
     }
+    const validThemes = ['parchment', 'void', 'neon', 'solar', 'cherry', 'emerald', 'frost'];
     return {
       ...DEFAULT_STATE,
       ...parsed,
+      theme: validThemes.includes(parsed.theme) ? parsed.theme : 'void',
       goals: parsed.goals.slice(0, 5)
     };
   } catch (err) {

@@ -32,7 +32,7 @@ describe('Storage & Backup Service', () => {
   it('persists and loads updated state', () => {
     const modified = {
       ...DEFAULT_STATE,
-      theme: 'golden' as const,
+      theme: 'solar' as const,
       goals: [
         ...DEFAULT_STATE.goals,
         {
@@ -49,7 +49,7 @@ describe('Storage & Backup Service', () => {
 
     saveState(modified);
     const loaded = loadState();
-    expect(loaded.theme).toBe('golden');
+    expect(loaded.theme).toBe('solar');
     expect(loaded.goals.length).toBe(2);
     expect(loaded.goals[1].title).toBe('Write Sci-Fi Novel');
   });
