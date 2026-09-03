@@ -1,4 +1,4 @@
-export type ThemeId = 'void' | 'golden' | 'neon' | 'parchment';
+export type ThemeId = 'void' | 'golden' | 'neon' | 'parchment' | 'emerald' | 'solar' | 'aurora';
 
 export interface ThemeColors {
   id: ThemeId;
@@ -96,5 +96,62 @@ export const THEMES: Record<ThemeId, ThemeColors> = {
     sandStream: '#292524',
     sandGlow: 'rgba(41, 37, 36, 0.2)',
     sandGrains: ['#1c1917', '#292524', '#44403c', '#78716c', '#0c0a09']
+  },
+  emerald: {
+    id: 'emerald',
+    name: 'Emerald Canopy',
+    subtitle: 'Deep forest pine base with luminous pale emerald & mint sand',
+    isDark: true,
+    bg: '#05120a',
+    bgSecondary: '#0a1e12',
+    cardBg: 'rgba(10, 30, 18, 0.8)',
+    border: 'rgba(16, 185, 129, 0.18)',
+    glassBorder: 'rgba(16, 185, 129, 0.35)',
+    textPrimary: '#ecfdf5',
+    textSecondary: '#6ee7b7',
+    textMuted: '#065f46',
+    accent: '#10b981',
+    accentGlow: 'rgba(16, 185, 129, 0.4)',
+    sandStream: '#34d399',
+    sandGlow: 'rgba(52, 211, 153, 0.45)',
+    sandGrains: ['#34d399', '#10b981', '#059669', '#a7f3d0', '#6ee7b7']
+  },
+  solar: {
+    id: 'solar',
+    name: 'Solar Flare',
+    subtitle: 'Midnight navy base with vibrant crimson, terracotta & copper sand',
+    isDark: true,
+    bg: '#0a0a12',
+    bgSecondary: '#141322',
+    cardBg: 'rgba(20, 19, 34, 0.8)',
+    border: 'rgba(244, 63, 94, 0.2)',
+    glassBorder: 'rgba(249, 115, 22, 0.35)',
+    textPrimary: '#fff1f2',
+    textSecondary: '#fca5a5',
+    textMuted: '#991b1b',
+    accent: '#f43f5e',
+    accentGlow: 'rgba(244, 63, 94, 0.45)',
+    sandStream: '#fb7185',
+    sandGlow: 'rgba(251, 113, 133, 0.45)',
+    sandGrains: ['#f43f5e', '#ea580c', '#e11d48', '#fdba74', '#fb7185']
+  },
+  aurora: {
+    id: 'aurora',
+    name: 'Aurora Borealis',
+    subtitle: 'Dark arctic indigo base with shifting teal, violet & frost-white sand',
+    isDark: true,
+    bg: '#060a16',
+    bgSecondary: '#0c1328',
+    cardBg: 'rgba(12, 19, 40, 0.8)',
+    border: 'rgba(147, 51, 234, 0.2)',
+    glassBorder: 'rgba(45, 212, 191, 0.35)',
+    textPrimary: '#f5f3ff',
+    textSecondary: '#c4b5fd',
+    textMuted: '#6b21a8',
+    accent: '#8b5cf6',
+    accentGlow: 'rgba(139, 92, 246, 0.45)',
+    sandStream: '#2dd4bf',
+    sandGlow: 'rgba(45, 212, 191, 0.5)',
+    sandGrains: ['#2dd4bf', '#a855f7', '#38bdf8', '#e0e7ff', '#ffffff']
   }
 };

@@ -64,7 +64,7 @@ export const App: React.FC = () => {
 
   // Actions
   const cycleTheme = useCallback(() => {
-    const themeKeys: ThemeId[] = ['void', 'golden', 'neon', 'parchment'];
+    const themeKeys: ThemeId[] = ['void', 'golden', 'neon', 'parchment', 'emerald', 'solar', 'aurora'];
     setAppState((prev) => {
       const nextIdx = (themeKeys.indexOf(prev.theme) + 1) % themeKeys.length;
       return { ...prev, theme: themeKeys[nextIdx] };

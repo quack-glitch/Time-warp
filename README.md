@@ -50,11 +50,14 @@ The product is **not** primarily a task manager, calendar, or reminder applicati
   - 100% native Web Audio API — zero external audio files.
   - Toggle on/off with <kbd>M</kbd>.
 
-- **4 Curated Ambient Themes**:
+- **7 Curated Ambient Themes**:
   - **Obsidian Void**: OLED pitch black with radiant gold sand.
   - **Golden Hour**: Warm sunset dusk with rich amber sand dunes.
   - **Cyber Neon**: Deep galactic indigo with bioluminescent cyan sand.
   - **Clean Parchment**: Ceramic daylight with charcoal ink grains.
+  - **Emerald Canopy**: Deep forest pine/moss base with luminous pale emerald and mint sand.
+  - **Solar Flare**: Rich midnight navy/charcoal base with vibrant crimson, burnt terracotta, and copper sand.
+  - **Aurora Borealis**: Dark arctic indigo base with shifting teal, violet, and soft frost-white sand.
 
 - **100% Local-First & PWA**:
   - Zero accounts, zero cloud servers, complete privacy.
@@ -68,8 +71,9 @@ The product is **not** primarily a task manager, calendar, or reminder applicati
 | Shortcut | Action |
 |---|---|
 | <kbd>F</kbd> | Toggle Fullscreen ambient display |
-| <kbd>T</kbd> | Cycle through 4 ambient themes |
-| <kbd>M</kbd> | Toggle ambient audio (Sand trickle & tick) |
+| <kbd>Z</kbd> | Manually toggle Zen Mode (hide/show chrome) |
+| <kbd>Space</kbd> / <kbd>M</kbd> | Toggle ambient audio (Sand trickle & tick) |
+| <kbd>T</kbd> | Cycle through all 7 ambient themes |
 | <kbd>1</kbd>–<kbd>5</kbd> | Switch between curated goals |
 | <kbd>Esc</kbd> | Exit fullscreen or close modal |
 

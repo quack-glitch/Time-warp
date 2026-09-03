@@ -1,3 +1,5 @@
+import { ThemeId } from './theme';
+
 export type CalendarType = 'AD' | 'BS';
 
 export interface BSDateRecord {
@@ -23,7 +25,7 @@ export interface Goal {
 export interface TimeWarpState {
   goals: Goal[];
   activeGoalId: string;
-  theme: 'void' | 'golden' | 'neon' | 'parchment';
+  theme: ThemeId;
   soundEnabled: boolean;
   soundVolume: number;
   zenMode: boolean;
