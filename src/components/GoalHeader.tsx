@@ -37,7 +37,7 @@ export const GoalHeader: React.FC<GoalHeaderProps> = ({ goal, theme, onEdit }) =
         onClick={onEdit}
       >
         <h1
-          className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-cinzel font-bold tracking-tight leading-snug transition-colors duration-200 line-clamp-2 px-2"
+          className="text-xl sm:text-2xl md:text-3xl font-sans font-bold tracking-tight leading-snug transition-colors duration-200 line-clamp-2 px-2"
           style={{ color: theme.textPrimary }}
         >
           {goal.title}
@@ -52,7 +52,7 @@ export const GoalHeader: React.FC<GoalHeaderProps> = ({ goal, theme, onEdit }) =
 
       {/* Dual Target Date Display (A.D. & B.S.) */}
       <div
-        className="flex items-center flex-wrap justify-center gap-2 mt-1.5 text-xs font-medium"
+        className="flex items-center flex-wrap justify-center gap-2 mt-1 text-xs font-medium"
         style={{ color: theme.textSecondary }}
       >
         <div className="flex items-center gap-1">

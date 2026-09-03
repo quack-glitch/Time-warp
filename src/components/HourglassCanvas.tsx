@@ -11,8 +11,8 @@ interface HourglassCanvasProps {
 interface Grain {
   x: number;
   y: number;
-  vx: number;
   vy: number;
+  vx: number;
   size: number;
   color: string;
   alpha: number;
@@ -62,161 +62,178 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
     const render = () => {
       ctx.clearRect(0, 0, width, height);
 
-      const centerX = width / 2;
-      const centerY = height / 2;
-      // Responsive bulb sizing that scales with container
-      const bulbRadius = Math.min(width * 0.35, height * 0.28);
-      const neckWidth = Math.max(8, bulbRadius * 0.12);
+      const cx = width / 2;
+      const cy = height / 2;
+      
+      // Geometry calculations
+      const totalH = Math.min(height * 0.88, 220);
+      const halfH = totalH / 2;
+      const topY = cy - halfH;
+      const bottomY = cy + halfH;
+      
+      const bulbW = Math.min(width * 0.45, 85);
+      const neckW = 10;
+      const neckH = 14;
 
-      const topBulbCenterY = centerY - bulbRadius * 0.85;
-      const bottomBulbCenterY = centerY + bulbRadius * 0.85;
-
-      // 1. Draw Hourglass Outer Silhouette (Crisp, Crystal Edge)
+      // 1. Draw Hourglass Stand & Wooden/Metallic End Caps
       ctx.save();
-      ctx.strokeStyle = theme.glassBorder;
-      ctx.lineWidth = 2;
+      const capW = bulbW * 1.25;
+      const capH = 8;
+      const capRadius = 4;
+
+      // Top Cap
+      ctx.fillStyle = theme.accent;
       ctx.shadowColor = theme.accentGlow;
-      ctx.shadowBlur = 6;
-
+      ctx.shadowBlur = 8;
       ctx.beginPath();
-      // Top base cap
-      const baseHalfWidth = bulbRadius * 1.12;
-      ctx.moveTo(centerX - baseHalfWidth, topBulbCenterY - bulbRadius * 0.95);
-      ctx.lineTo(centerX + baseHalfWidth, topBulbCenterY - bulbRadius * 0.95);
+      ctx.roundRect(cx - capW / 2, topY - capH, capW, capH, capRadius);
+      ctx.fill();
 
-      // Upper right bulb curve to neck
-      ctx.bezierCurveTo(
-        centerX + bulbRadius * 1.2, topBulbCenterY - bulbRadius * 0.2,
-        centerX + neckWidth * 1.6, centerY - 16,
-        centerX + neckWidth / 2, centerY
-      );
-
-      // Lower right bulb curve out to base
-      ctx.bezierCurveTo(
-        centerX + neckWidth * 1.6, centerY + 16,
-        centerX + bulbRadius * 1.2, bottomBulbCenterY + bulbRadius * 0.2,
-        centerX + baseHalfWidth, bottomBulbCenterY + bulbRadius * 0.95
-      );
-
-      // Bottom base cap
-      ctx.lineTo(centerX - baseHalfWidth, bottomBulbCenterY + bulbRadius * 0.95);
-
-      // Lower left bulb curve to neck
-      ctx.bezierCurveTo(
-        centerX - bulbRadius * 1.2, bottomBulbCenterY + bulbRadius * 0.2,
-        centerX - neckWidth * 1.6, centerY + 16,
-        centerX - neckWidth / 2, centerY
-      );
-
-      // Upper left bulb curve to top base
-      ctx.bezierCurveTo(
-        centerX - neckWidth * 1.6, centerY - 16,
-        centerX - bulbRadius * 1.2, topBulbCenterY - bulbRadius * 0.2,
-        centerX - baseHalfWidth, topBulbCenterY - bulbRadius * 0.95
-      );
-
-      ctx.stroke();
-
-      // Delicate horizontal frame rings
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = theme.accent;
+      // Bottom Cap
       ctx.beginPath();
-      ctx.moveTo(centerX - baseHalfWidth * 1.05, topBulbCenterY - bulbRadius * 0.95);
-      ctx.lineTo(centerX + baseHalfWidth * 1.05, topBulbCenterY - bulbRadius * 0.95);
-      ctx.moveTo(centerX - baseHalfWidth * 1.05, bottomBulbCenterY + bulbRadius * 0.95);
-      ctx.lineTo(centerX + baseHalfWidth * 1.05, bottomBulbCenterY + bulbRadius * 0.95);
-      ctx.stroke();
+      ctx.roundRect(cx - capW / 2, bottomY, capW, capH, capRadius);
+      ctx.fill();
 
-      // Glass specular highlight on left rim
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+      // Delicate Side Supporting Columns
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = theme.border;
+      ctx.shadowBlur = 0;
       ctx.beginPath();
-      ctx.arc(centerX, topBulbCenterY, bulbRadius * 1.05, Math.PI * 0.85, Math.PI * 1.15);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(centerX, bottomBulbCenterY, bulbRadius * 1.05, Math.PI * 0.85, Math.PI * 1.15);
+      ctx.moveTo(cx - capW / 2 + 4, topY);
+      ctx.lineTo(cx - capW / 2 + 4, bottomY);
+      ctx.moveTo(cx + capW / 2 - 4, topY);
+      ctx.lineTo(cx + capW / 2 - 4, bottomY);
       ctx.stroke();
       ctx.restore();
 
-      // 2. Upper Chamber Sand (Remaining Time)
-      if (!isExpired && remainingPercent > 0.5) {
-        ctx.save();
-        const topFillRatio = remainingPercent / 100;
-        const topSandHeight = bulbRadius * 1.45 * topFillRatio;
-        const topSandY = centerY - 8 - topSandHeight;
+      // Helper function to trace upper chamber inner glass wall
+      const traceTopChamber = () => {
+        ctx.beginPath();
+        ctx.moveTo(cx - bulbW, topY);
+        ctx.lineTo(cx + bulbW, topY);
+        ctx.bezierCurveTo(
+          cx + bulbW * 0.95, cy - neckH * 2.5,
+          cx + neckW * 1.4, cy - neckH * 0.6,
+          cx + neckW / 2, cy
+        );
+        ctx.lineTo(cx - neckW / 2, cy);
+        ctx.bezierCurveTo(
+          cx - neckW * 1.4, cy - neckH * 0.6,
+          cx - bulbW * 0.95, cy - neckH * 2.5,
+          cx - bulbW, topY
+        );
+        ctx.closePath();
+      };
 
-        const sandGrad = ctx.createLinearGradient(centerX, topSandY, centerX, centerY);
+      // Helper function to trace lower chamber inner glass wall
+      const traceBottomChamber = () => {
+        ctx.beginPath();
+        ctx.moveTo(cx - neckW / 2, cy);
+        ctx.lineTo(cx + neckW / 2, cy);
+        ctx.bezierCurveTo(
+          cx + neckW * 1.4, cy + neckH * 0.6,
+          cx + bulbW * 0.95, cy + neckH * 2.5,
+          cx + bulbW, bottomY
+        );
+        ctx.lineTo(cx - bulbW, bottomY);
+        ctx.bezierCurveTo(
+          cx - bulbW * 0.95, cy + neckH * 2.5,
+          cx - neckW * 1.4, cy + neckH * 0.6,
+          cx - neckW / 2, cy
+        );
+        ctx.closePath();
+      };
+
+      // 2. Inner Glass Ambient Volume Glow
+      ctx.save();
+      traceTopChamber();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+      ctx.fill();
+      traceBottomChamber();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+      ctx.fill();
+      ctx.restore();
+
+      // 3. UPPER CHAMBER SAND (Clipped to inner glass — zero leaking or gaps!)
+      if (!isExpired && remainingPercent > 0.05) {
+        ctx.save();
+        traceTopChamber();
+        ctx.clip(); // CLIPS TO EXACT GLASS CONTOUR!
+
+        const topRatio = remainingPercent / 100;
+        const availableHeight = halfH - neckH;
+        const sandH = availableHeight * topRatio;
+        const sandSurfaceY = cy - neckH - sandH;
+
+        const sandGrad = ctx.createLinearGradient(cx, sandSurfaceY, cx, cy);
         sandGrad.addColorStop(0, colors[0]);
+        sandGrad.addColorStop(0.7, colors[1] || colors[0]);
         sandGrad.addColorStop(1, colors[2] || colors[0]);
 
         ctx.fillStyle = sandGrad;
         ctx.beginPath();
-        const currentTopWidth = (bulbRadius * 0.9) * Math.sqrt(topFillRatio);
-        // Curved sand surface (meniscus)
-        ctx.moveTo(centerX - currentTopWidth, topSandY);
-        ctx.quadraticCurveTo(centerX, topSandY + 3, centerX + currentTopWidth, topSandY);
-        ctx.bezierCurveTo(
-          centerX + currentTopWidth * 0.45, centerY - 20,
-          centerX + neckWidth * 0.8, centerY - 6,
-          centerX, centerY - 2
-        );
-        ctx.bezierCurveTo(
-          centerX - neckWidth * 0.8, centerY - 6,
-          centerX - currentTopWidth * 0.45, centerY - 20,
-          centerX - currentTopWidth, topSandY
-        );
+        // Funnel-shaped surface dipping slightly in the center
+        ctx.moveTo(cx - bulbW * 1.2, sandSurfaceY);
+        ctx.quadraticCurveTo(cx, sandSurfaceY + 5, cx + bulbW * 1.2, sandSurfaceY);
+        ctx.lineTo(cx + bulbW * 1.2, cy);
+        ctx.lineTo(cx - bulbW * 1.2, cy);
         ctx.closePath();
         ctx.fill();
+
         ctx.restore();
       }
 
-      // 3. Lower Chamber Sand Dune (Elapsed Time)
+      // 4. LOWER CHAMBER ACCUMULATING DUNE (Clipped to lower glass!)
       ctx.save();
-      const bottomFillRatio = Math.min(1, progressPercent / 100);
-      const bottomDuneMaxHeight = bulbRadius * 1.4;
-      const bottomDuneHeight = bottomDuneMaxHeight * Math.pow(bottomFillRatio, 0.85);
-      const duneBaseY = bottomBulbCenterY + bulbRadius * 0.93;
-      const dunePeakY = duneBaseY - bottomDuneHeight;
+      traceBottomChamber();
+      ctx.clip(); // CLIPS TO LOWER GLASS CONTOUR!
 
-      if (bottomFillRatio > 0.01) {
-        const duneGrad = ctx.createLinearGradient(centerX, dunePeakY, centerX, duneBaseY);
+      const botRatio = Math.min(1, progressPercent / 100);
+      if (botRatio > 0.005) {
+        const availableHeight = halfH - neckH;
+        const duneH = availableHeight * Math.pow(botRatio, 0.82);
+        const dunePeakY = bottomY - duneH;
+
+        const duneGrad = ctx.createLinearGradient(cx, dunePeakY, cx, bottomY);
         duneGrad.addColorStop(0, colors[0]);
-        duneGrad.addColorStop(1, colors[1] || colors[0]);
+        duneGrad.addColorStop(0.5, colors[1] || colors[0]);
+        duneGrad.addColorStop(1, colors[2] || colors[0]);
 
         ctx.fillStyle = duneGrad;
         ctx.beginPath();
-        const duneBaseWidth = bulbRadius * 1.0;
-        ctx.moveTo(centerX - duneBaseWidth, duneBaseY);
-        // Graceful parabolic sand mound
-        ctx.quadraticCurveTo(centerX - duneBaseWidth * 0.25, dunePeakY + 2, centerX, dunePeakY);
-        ctx.quadraticCurveTo(centerX + duneBaseWidth * 0.25, dunePeakY + 2, centerX + duneBaseWidth, duneBaseY);
+        // Natural parabolic sand mound with crest at center
+        ctx.moveTo(cx - bulbW * 1.2, bottomY);
+        ctx.quadraticCurveTo(cx - bulbW * 0.35, dunePeakY + 2, cx, dunePeakY);
+        ctx.quadraticCurveTo(cx + bulbW * 0.35, dunePeakY + 2, cx + bulbW * 1.2, bottomY);
         ctx.closePath();
         ctx.fill();
       }
       ctx.restore();
 
-      // 4. Center Falling Stream & Grains
+      // 5. STREAM & FALLING SAND GRAINS
+      const dunePeakY = bottomY - (halfH - neckH) * Math.pow(Math.min(1, progressPercent / 100), 0.82);
       if (!isExpired && remainingPercent > 0.1) {
+        // Continuous central thread
         ctx.save();
         ctx.strokeStyle = theme.sandStream;
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 2.2;
         ctx.shadowColor = theme.sandGlow;
-        ctx.shadowBlur = 8;
+        ctx.shadowBlur = 6;
         ctx.beginPath();
-        ctx.moveTo(centerX, centerY - 2);
-        ctx.lineTo(centerX, dunePeakY + 2);
+        ctx.moveTo(cx, cy - 2);
+        ctx.lineTo(cx, Math.min(bottomY, dunePeakY + 2));
         ctx.stroke();
         ctx.restore();
 
         // Spawn falling grains
-        if (grainsRef.current.length < 35) {
+        if (grainsRef.current.length < 30) {
           for (let i = 0; i < 2; i++) {
             grainsRef.current.push({
-              x: centerX + (Math.random() - 0.5) * 4,
-              y: centerY + Math.random() * 6,
-              vx: (Math.random() - 0.5) * 1.0,
-              vy: 2.5 + Math.random() * 3.5,
-              size: 1.2 + Math.random() * 1.6,
+              x: cx + (Math.random() - 0.5) * 3,
+              y: cy + Math.random() * 4,
+              vx: (Math.random() - 0.5) * 0.8,
+              vy: 2.8 + Math.random() * 3.2,
+              size: 1.2 + Math.random() * 1.4,
               color: colors[Math.floor(Math.random() * colors.length)],
               alpha: 0.8 + Math.random() * 0.2
             });
@@ -224,13 +241,13 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
         }
       }
 
-      // Render falling grains
+      // Render & update grains
       ctx.save();
       const nextGrains: Grain[] = [];
       for (const g of grainsRef.current) {
         g.y += g.vy;
         g.x += g.vx;
-        g.vy += 0.22;
+        g.vy += 0.2;
 
         if (g.y < dunePeakY) {
           ctx.fillStyle = g.color;
@@ -242,6 +259,41 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
         }
       }
       grainsRef.current = nextGrains;
+      ctx.restore();
+
+      // 6. CRISP OUTER GLASS SILHOUETTE (Drawn ON TOP for crystal sharpness)
+      ctx.save();
+      ctx.strokeStyle = theme.glassBorder;
+      ctx.lineWidth = 2;
+      ctx.shadowColor = theme.accentGlow;
+      ctx.shadowBlur = 4;
+
+      traceTopChamber();
+      ctx.stroke();
+
+      traceBottomChamber();
+      ctx.stroke();
+
+      // Delicate inner glass highlights
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      // Upper left glass reflection
+      ctx.moveTo(cx - bulbW + 4, topY + 4);
+      ctx.bezierCurveTo(
+        cx - bulbW * 0.9, cy - neckH * 2.2,
+        cx - neckW * 1.5, cy - neckH * 0.8,
+        cx - neckW / 2, cy - 2
+      );
+      // Lower right glass reflection
+      ctx.moveTo(cx + neckW / 2, cy + 2);
+      ctx.bezierCurveTo(
+        cx + neckW * 1.5, cy + neckH * 0.8,
+        cx + bulbW * 0.9, cy + neckH * 2.2,
+        cx + bulbW - 4, bottomY - 4
+      );
+      ctx.stroke();
+
       ctx.restore();
 
       animFrameRef.current = requestAnimationFrame(render);
@@ -258,7 +310,7 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
   return (
     <div
       ref={containerRef}
-      className="relative w-full max-w-sm h-52 sm:h-60 md:h-64 flex items-center justify-center my-1 sm:my-2 flex-shrink-0"
+      className="relative w-full max-w-xs h-48 sm:h-56 md:h-60 flex items-center justify-center my-1 flex-shrink-0"
     >
       <canvas ref={canvasRef} className="block" />
     </div>
