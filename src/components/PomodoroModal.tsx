@@ -62,8 +62,8 @@ export const PomodoroModal: React.FC<PomodoroModalProps> = ({
   const formattedTime = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 
   // Circular SVG dimensions
-  const size = 240;
-  const strokeWidth = 8;
+  const size = 200;
+  const strokeWidth = 7;
   const center = size / 2;
   const radius = center - strokeWidth - 6;
   const circumference = 2 * Math.PI * radius;
@@ -85,11 +85,11 @@ export const PomodoroModal: React.FC<PomodoroModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md transition-opacity duration-300 animate-ambient"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl transition-opacity duration-200"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-3xl p-6 sm:p-7 border shadow-2xl relative overflow-hidden flex flex-col items-center select-none"
+        className="w-full max-w-lg rounded-3xl p-6 sm:p-7 border shadow-2xl relative overflow-hidden flex flex-col items-center select-none"
         style={{
           backgroundColor: theme.bgSecondary,
           borderColor: theme.border,
@@ -145,10 +145,10 @@ export const PomodoroModal: React.FC<PomodoroModalProps> = ({
         </div>
 
         {/* Three Columns: Left Metric Card | Center Circular Ring | Right Metric Card */}
-        <div className="w-full flex items-center justify-between gap-2 relative z-10 mb-4">
+        <div className="w-full flex items-center justify-between gap-3 relative z-10 mb-4">
           {/* Left Card: Sessions Completed */}
           <div
-            className="flex-1 flex flex-col items-center justify-center p-3 rounded-2xl border backdrop-blur-sm text-center min-w-0"
+            className="flex-1 flex flex-col items-center justify-center p-3 rounded-2xl border backdrop-blur-sm text-center min-w-[85px]"
             style={{
               backgroundColor: theme.cardBg,
               borderColor: theme.border
@@ -159,12 +159,12 @@ export const PomodoroModal: React.FC<PomodoroModalProps> = ({
               Sessions
             </span>
             <span
-              className="text-xl sm:text-2xl font-bold font-sans tabular-nums mt-0.5"
+              className="text-xl font-bold font-sans tabular-nums mt-0.5"
               style={{ color: theme.textPrimary }}
             >
               {goalSessions}
             </span>
-            <span className="text-[9px] font-medium opacity-60 truncate max-w-full">
+            <span className="text-[9px] font-medium opacity-60 whitespace-nowrap">
               Completed
             </span>
           </div>
@@ -218,21 +218,21 @@ export const PomodoroModal: React.FC<PomodoroModalProps> = ({
             {/* Inner Content within Ring */}
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
               <span
-                className="text-[10px] font-mono font-bold tracking-wider uppercase opacity-70 mb-0.5"
+                className="text-[9px] font-mono font-bold tracking-wider uppercase opacity-70 mb-0.5"
                 style={{ color: theme.accent }}
               >
                 {modeLabels[mode].title}
               </span>
 
               <span
-                className="text-4xl sm:text-5xl font-sans font-extrabold tracking-tight tabular-nums"
+                className="text-3xl sm:text-4xl font-sans font-extrabold tracking-tight tabular-nums"
                 style={{ color: theme.textPrimary }}
               >
                 {formattedTime}
               </span>
 
               <div
-                className="flex items-center gap-1 mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium border"
+                className="flex items-center gap-1 mt-1 px-2.5 py-0.5 rounded-full text-[9px] font-medium border"
                 style={{
                   borderColor: theme.border,
                   backgroundColor: 'rgba(255,255,255,0.03)',
@@ -247,7 +247,7 @@ export const PomodoroModal: React.FC<PomodoroModalProps> = ({
 
           {/* Right Card: Daily Streak */}
           <div
-            className="flex-1 flex flex-col items-center justify-center p-3 rounded-2xl border backdrop-blur-sm text-center min-w-0"
+            className="flex-1 flex flex-col items-center justify-center p-3 rounded-2xl border backdrop-blur-sm text-center min-w-[85px]"
             style={{
               backgroundColor: theme.cardBg,
               borderColor: theme.border
@@ -258,12 +258,12 @@ export const PomodoroModal: React.FC<PomodoroModalProps> = ({
               Streak
             </span>
             <span
-              className="text-xl sm:text-2xl font-bold font-sans tabular-nums mt-0.5"
+              className="text-xl font-bold font-sans tabular-nums mt-0.5"
               style={{ color: theme.textPrimary }}
             >
               {streakDays}
             </span>
-            <span className="text-[9px] font-medium opacity-60 truncate max-w-full">
+            <span className="text-[9px] font-medium opacity-60 whitespace-nowrap">
               {streakDays === 1 ? 'Day' : 'Days'}
             </span>
           </div>

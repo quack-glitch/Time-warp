@@ -249,7 +249,11 @@ export const App: React.FC = () => {
       </header>
 
       {/* CENTER STAGE: Goal Title, Glass Hourglass, Bold Countdown */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 max-w-4xl mx-auto w-full my-auto py-2">
+      <main
+        className={`relative z-10 flex-1 flex flex-col items-center justify-center px-4 max-w-4xl mx-auto w-full my-auto py-2 transition-all duration-300 ${
+          isPomodoroModalOpen ? 'opacity-5 blur-sm pointer-events-none scale-98' : 'opacity-100'
+        }`}
+      >
         <GoalHeader
           goal={activeGoal}
           theme={theme}
