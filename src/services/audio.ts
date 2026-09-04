@@ -143,9 +143,63 @@ class ProceduralAudioEngine {
     } catch {}
   }
 
+  public playAlarm() {
+    this.initContext();
+    if (!this.ctx) return;
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume().catch(() => {});
+    }
+
+    try {
+      const now = this.ctx.currentTime;
+      // Classic Pomodoro digital alarm: 3 bursts of double-beeps followed by a sustained chime
+      const beeps = [
+        { time: now + 0.00, freq: 880, dur: 0.10 },
+        { time: now + 0.14, freq: 1175, dur: 0.14 },
+
+        { time: now + 0.40, freq: 880, dur: 0.10 },
+        { time: now + 0.54, freq: 1175, dur: 0.14 },
+
+        { time: now + 0.80, freq: 880, dur: 0.10 },
+        { time: now + 0.94, freq: 1175, dur: 0.14 },
+
+        { time: now + 1.25, freq: 1046, dur: 1.2 }
+      ];
+
+      beeps.forEach(({ time, freq, dur }) => {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = dur > 0.5 ? 'sine' : 'triangle';
+        osc.frequency.setValueAtTime(freq, time);
+
+        gain.gain.setValueAtTime(0.0001, time);
+        gain.gain.linearRampToValueAtTime(0.35, time + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.onended = () => {
+          try {
+            osc.disconnect();
+            gain.disconnect();
+          } catch {}
+        };
+
+        osc.start(time);
+        osc.stop(time + dur);
+      });
+    } catch {}
+  }
+
   public playCompletionChime() {
     this.initContext();
-    if (!this.ctx || !this.masterGain || this.ctx.state !== 'running') return;
+    if (!this.ctx) return;
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume().catch(() => {});
+    }
 
     try {
       // 3-tier harmonic meditation bell chime (528Hz, 792Hz, 1056Hz)

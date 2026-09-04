@@ -17,7 +17,6 @@ export interface UsePomodoroTimerOptions {
 
 export function usePomodoroTimer({
   initialDurations,
-  soundEnabled = true,
   onSessionCompleted
 }: UsePomodoroTimerOptions = {}) {
   const [durations, setDurations] = useState<PomodoroDurations>({
@@ -29,75 +28,89 @@ export function usePomodoroTimer({
   const [mode, setMode] = useState<PomodoroMode>('focus');
   const [isRunning, setIsRunning] = useState(false);
   const [timeLeft, setTimeLeft] = useState(() => (initialDurations?.focus ?? 25) * 60);
+  const [progressPercent, setProgressPercent] = useState(0);
 
+  const targetEndTimeRef = useRef<number | null>(null);
   const totalDuration = durations[mode] * 60;
-  // Progress from 0% at start to 100% when time runs out
-  const progressPercent = Math.min(
-    100,
-    Math.max(0, ((totalDuration - timeLeft) / totalDuration) * 100)
-  );
 
   const onSessionCompletedRef = useRef(onSessionCompleted);
   useEffect(() => {
     onSessionCompletedRef.current = onSessionCompleted;
   }, [onSessionCompleted]);
 
-  const soundEnabledRef = useRef(soundEnabled);
+  // High precision timer loop (50ms interval) for butter-smooth progress glide
   useEffect(() => {
-    soundEnabledRef.current = soundEnabled;
-  }, [soundEnabled]);
+    if (!isRunning) {
+      targetEndTimeRef.current = null;
+      return;
+    }
 
-  // Handle countdown interval
-  useEffect(() => {
-    if (!isRunning) return;
+    if (targetEndTimeRef.current === null) {
+      targetEndTimeRef.current = Date.now() + timeLeft * 1000;
+    }
 
     const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          // Timer finished
-          setIsRunning(false);
+      if (targetEndTimeRef.current === null) return;
+      const now = Date.now();
+      const diffMs = targetEndTimeRef.current - now;
 
-          // Play procedural harmonic bell chime
-          if (soundEnabledRef.current) {
-            audioEngine.playCompletionChime();
-          }
+      if (diffMs <= 0) {
+        // FINISHED!
+        setIsRunning(false);
+        targetEndTimeRef.current = null;
+        setTimeLeft(0);
+        setProgressPercent(100);
 
-          // Browser Desktop Notification
-          if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-            try {
-              new Notification('Time Warp Focus', {
-                body: mode === 'focus'
-                  ? 'Great focus session! Time to take a well-deserved break.'
-                  : 'Break completed! Ready to make progress on your goal?',
-                icon: '/hourglass.svg'
-              });
-            } catch {}
-          }
+        // Sound the ALARM!
+        audioEngine.playAlarm();
 
-          // Trigger completion callback
-          onSessionCompletedRef.current?.(mode);
-
-          // Automatically prepare default for next session
-          const nextMode: PomodoroMode = mode === 'focus' ? 'shortBreak' : 'focus';
-          setMode(nextMode);
-          return durations[nextMode] * 60;
+        // Browser Desktop Notification
+        if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+          try {
+            new Notification('Time Warp Focus', {
+              body: mode === 'focus'
+                ? '🔔 Focus session complete! Time for a break.'
+                : '🔔 Break finished! Ready to focus?',
+              icon: '/hourglass.svg'
+            });
+          } catch {}
         }
-        return prev - 1;
-      });
-    }, 1000);
+
+        // Trigger completion callback
+        onSessionCompletedRef.current?.(mode);
+
+        // Automatically prepare default for next session
+        const nextMode: PomodoroMode = mode === 'focus' ? 'shortBreak' : 'focus';
+        setMode(nextMode);
+        const nextTotalSec = durations[nextMode] * 60;
+        setTimeLeft(nextTotalSec);
+        setProgressPercent(0);
+        return;
+      }
+
+      // Smooth progress and seconds update
+      const curRemainingSec = Math.ceil(diffMs / 1000);
+      setTimeLeft(curRemainingSec);
+
+      const totalMs = durations[mode] * 60 * 1000;
+      const elapsedMs = totalMs - diffMs;
+      const pct = Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100));
+      setProgressPercent(pct);
+    }, 50);
 
     return () => clearInterval(timer);
-  }, [isRunning, mode, durations]);
+  }, [isRunning, mode, durations, timeLeft]);
 
   const start = useCallback(() => {
-    // Request notification permission if needed
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission().catch(() => {});
     }
+    targetEndTimeRef.current = Date.now() + timeLeft * 1000;
     setIsRunning(true);
-  }, []);
+  }, [timeLeft]);
 
   const pause = useCallback(() => {
+    targetEndTimeRef.current = null;
     setIsRunning(false);
   }, []);
 
@@ -110,17 +123,24 @@ export function usePomodoroTimer({
   }, [isRunning, start, pause]);
 
   const reset = useCallback(() => {
+    targetEndTimeRef.current = null;
     setIsRunning(false);
     setTimeLeft(durations[mode] * 60);
+    setProgressPercent(0);
   }, [durations, mode]);
 
   const switchMode = useCallback((newMode: PomodoroMode) => {
+    targetEndTimeRef.current = null;
     setIsRunning(false);
     setMode(newMode);
     setTimeLeft(durations[newMode] * 60);
+    setProgressPercent(0);
   }, [durations]);
 
   const adjustDuration = useCallback((deltaMinutes: number) => {
+    targetEndTimeRef.current = null;
+    setIsRunning(false);
+    setProgressPercent(0);
     setDurations((prev) => {
       const current = prev[mode];
       const nextMin = Math.max(1, Math.min(120, current + deltaMinutes));
@@ -128,7 +148,6 @@ export function usePomodoroTimer({
       setTimeLeft(nextMin * 60);
       return nextDurations;
     });
-    setIsRunning(false);
   }, [mode]);
 
   return {

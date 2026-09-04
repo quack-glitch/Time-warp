@@ -70,8 +70,8 @@ export const PomodoroModal: React.FC<PomodoroModalProps> = ({
   // Arc drains clockwise as time passes
   const strokeDashoffset = circumference - (progressPercent / 100) * circumference;
 
-  // Leading dot position
-  const angle = (progressPercent / 100) * 2 * Math.PI - Math.PI / 2;
+  // Leading dot position: starts at 12 o'clock (-PI / 2) and rotates clockwise
+  const angle = -Math.PI / 2 + (progressPercent / 100) * 2 * Math.PI;
   const dotX = center + radius * Math.cos(angle);
   const dotY = center + radius * Math.sin(angle);
 
@@ -171,7 +171,7 @@ export const PomodoroModal: React.FC<PomodoroModalProps> = ({
 
           {/* Center: Circular SVG Progress Ring */}
           <div className="relative flex items-center justify-center flex-shrink-0">
-            <svg width={size} height={size} className="transform -rotate-90">
+            <svg width={size} height={size}>
               {/* Background Track Ring */}
               <circle
                 cx={center}
@@ -184,7 +184,7 @@ export const PomodoroModal: React.FC<PomodoroModalProps> = ({
                 style={{ color: theme.textSecondary }}
               />
 
-              {/* Dynamic Animated Progress Arc */}
+              {/* Dynamic Progress Arc (starts at 12 o'clock via rotate(-90)) */}
               <circle
                 cx={center}
                 cy={center}
@@ -195,18 +195,18 @@ export const PomodoroModal: React.FC<PomodoroModalProps> = ({
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}
                 strokeLinecap="round"
-                className="transition-all duration-500 ease-linear"
+                transform={`rotate(-90 ${center} ${center})`}
                 style={{
                   filter: `drop-shadow(0 0 8px ${theme.accentGlow})`
                 }}
               />
 
-              {/* Glowing leading thumb dot */}
+              {/* Glowing leading thumb dot (synchronized to arc leading edge) */}
               {progressPercent > 0 && progressPercent < 100 && (
                 <circle
                   cx={dotX}
                   cy={dotY}
-                  r={strokeWidth * 0.75}
+                  r={strokeWidth * 0.8}
                   fill="#ffffff"
                   style={{
                     filter: `drop-shadow(0 0 6px ${theme.accent})`
