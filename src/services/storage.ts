@@ -9,7 +9,8 @@ export const DEFAULT_INITIAL_GOAL: Goal = {
   deadline: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString(),
   calendarType: 'AD',
   status: 'active',
-  createdAt: new Date().toISOString()
+  createdAt: new Date().toISOString(),
+  pomodoroSessions: 0
 };
 
 export const DEFAULT_STATE: TimeWarpState = {
@@ -18,7 +19,16 @@ export const DEFAULT_STATE: TimeWarpState = {
   theme: 'void',
   soundEnabled: false,
   soundVolume: 0.35,
-  zenMode: false
+  zenMode: false,
+  pomodoroStreak: {
+    currentStreak: 0,
+    lastActiveDate: ''
+  },
+  pomodoroSettings: {
+    focusMinutes: 25,
+    shortBreakMinutes: 5,
+    longBreakMinutes: 15
+  }
 };
 
 function getStorage(): Storage | null {

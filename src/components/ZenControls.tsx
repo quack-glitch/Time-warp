@@ -1,23 +1,27 @@
 import React from 'react';
 import { ThemeColors } from '../types/theme';
-import { Volume2, VolumeX, Palette, Maximize, Download } from 'lucide-react';
+import { Volume2, VolumeX, Palette, Maximize, Download, Timer } from 'lucide-react';
 
 interface ZenControlsProps {
   theme: ThemeColors;
   soundEnabled: boolean;
+  isPomodoroActive?: boolean;
   onToggleSound: () => void;
   onCycleTheme: () => void;
   onToggleFullscreen: () => void;
   onOpenBackup: () => void;
+  onOpenPomodoro: () => void;
 }
 
 export const ZenControls: React.FC<ZenControlsProps> = ({
   theme,
   soundEnabled,
+  isPomodoroActive = false,
   onToggleSound,
   onCycleTheme,
   onToggleFullscreen,
-  onOpenBackup
+  onOpenBackup,
+  onOpenPomodoro
 }) => {
   return (
     <div
@@ -27,6 +31,28 @@ export const ZenControls: React.FC<ZenControlsProps> = ({
         borderColor: theme.border
       }}
     >
+      {/* Pomodoro Focus Timer */}
+      <button
+        onClick={onOpenPomodoro}
+        className="relative p-2 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
+        title="Pomodoro Focus Timer (P)"
+        style={{ color: isPomodoroActive ? theme.accent : theme.textSecondary }}
+      >
+        <Timer className="w-4 h-4" />
+        {isPomodoroActive && (
+          <span
+            className="absolute top-1 right-1 w-2 h-2 rounded-full animate-ping"
+            style={{ backgroundColor: theme.accent }}
+          />
+        )}
+        {isPomodoroActive && (
+          <span
+            className="absolute top-1 right-1 w-2 h-2 rounded-full"
+            style={{ backgroundColor: theme.accent }}
+          />
+        )}
+      </button>
+
       {/* Theme cycle */}
       <button
         onClick={onCycleTheme}

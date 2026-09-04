@@ -4,6 +4,8 @@ import { THEMES, ThemeId } from './types/theme';
 import { Goal, TimeWarpState } from './types/goal';
 import { useCountdown } from './hooks/useCountdown';
 import { useIdle } from './hooks/useIdle';
+import { usePomodoroTimer } from './hooks/usePomodoroTimer';
+import { calculateStreak } from './services/streak';
 import { audioEngine } from './services/audio';
 import { HourglassCanvas } from './components/HourglassCanvas';
 import { CountdownDisplay } from './components/CountdownDisplay';
@@ -12,13 +14,41 @@ import { GoalSwitcher } from './components/GoalSwitcher';
 import { ZenControls } from './components/ZenControls';
 import { GoalModal } from './components/GoalModal';
 import { BackupModal } from './components/BackupModal';
+import { PomodoroModal } from './components/PomodoroModal';
 
 export const App: React.FC = () => {
   const [appState, setAppState] = useState<TimeWarpState>(() => loadState());
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
+  const [isPomodoroModalOpen, setIsPomodoroModalOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | undefined>(undefined);
   const [manualZen, setManualZen] = useState(false);
+
+  const handlePomodoroSessionCompleted = useCallback((mode: string) => {
+    if (mode === 'focus') {
+      setAppState((prev) => {
+        const updatedGoals = prev.goals.map((g) =>
+          g.id === prev.activeGoalId
+            ? { ...g, pomodoroSessions: (g.pomodoroSessions || 0) + 1 }
+            : g
+        );
+        const streakResult = calculateStreak(
+          prev.pomodoroStreak?.lastActiveDate,
+          prev.pomodoroStreak?.currentStreak || 0
+        );
+        return {
+          ...prev,
+          goals: updatedGoals,
+          pomodoroStreak: streakResult
+        };
+      });
+    }
+  }, []);
+
+  const pomodoro = usePomodoroTimer({
+    soundEnabled: appState.soundEnabled,
+    onSessionCompleted: handlePomodoroSessionCompleted
+  });
 
   const theme = THEMES[appState.theme] || THEMES.void;
   const isIdle = useIdle(4000);
@@ -113,6 +143,8 @@ export const App: React.FC = () => {
         cycleTheme();
       } else if (e.key === 'm' || e.key === 'M') {
         toggleSound();
+      } else if (e.key === 'p' || e.key === 'P') {
+        setIsPomodoroModalOpen((prev) => !prev);
       } else if (['1', '2', '3', '4', '5'].includes(e.key)) {
         const index = parseInt(e.key, 10) - 1;
         if (appState.goals[index]) {
@@ -207,10 +239,12 @@ export const App: React.FC = () => {
         <ZenControls
           theme={theme}
           soundEnabled={appState.soundEnabled}
+          isPomodoroActive={pomodoro.isRunning}
           onToggleSound={toggleSound}
           onCycleTheme={cycleTheme}
           onToggleFullscreen={toggleFullscreen}
           onOpenBackup={() => setIsBackupModalOpen(true)}
+          onOpenPomodoro={() => setIsPomodoroModalOpen(true)}
         />
       </header>
 
@@ -243,7 +277,7 @@ export const App: React.FC = () => {
         style={{ color: theme.textSecondary }}
       >
         <span>
-          <kbd className="px-1 py-0.5 rounded bg-white/10 font-bold">F</kbd> Fullscreen · <kbd className="px-1 py-0.5 rounded bg-white/10 font-bold">Z</kbd> Zen Mode · <kbd className="px-1 py-0.5 rounded bg-white/10 font-bold">Space</kbd> Sound · <kbd className="px-1 py-0.5 rounded bg-white/10 font-bold">T</kbd> Theme
+          <kbd className="px-1 py-0.5 rounded bg-white/10 font-bold">P</kbd> Focus · <kbd className="px-1 py-0.5 rounded bg-white/10 font-bold">F</kbd> Fullscreen · <kbd className="px-1 py-0.5 rounded bg-white/10 font-bold">Z</kbd> Zen · <kbd className="px-1 py-0.5 rounded bg-white/10 font-bold">Space</kbd> Sound · <kbd className="px-1 py-0.5 rounded bg-white/10 font-bold">T</kbd> Theme
         </span>
         <span>Make time visible.</span>
       </footer>
@@ -268,6 +302,24 @@ export const App: React.FC = () => {
         theme={theme}
         onClose={() => setIsBackupModalOpen(false)}
         onRestore={(restored) => setAppState(restored)}
+      />
+
+      <PomodoroModal
+        isOpen={isPomodoroModalOpen}
+        theme={theme}
+        activeGoal={activeGoal}
+        streakDays={appState.pomodoroStreak?.currentStreak || 0}
+        mode={pomodoro.mode}
+        isRunning={pomodoro.isRunning}
+        timeLeft={pomodoro.timeLeft}
+        totalDuration={pomodoro.totalDuration}
+        progressPercent={pomodoro.progressPercent}
+        durations={pomodoro.durations}
+        onClose={() => setIsPomodoroModalOpen(false)}
+        onToggle={pomodoro.toggle}
+        onReset={pomodoro.reset}
+        onSwitchMode={pomodoro.switchMode}
+        onAdjustDuration={pomodoro.adjustDuration}
       />
     </div>
   );

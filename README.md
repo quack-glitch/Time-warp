@@ -59,6 +59,14 @@ The product is **not** primarily a task manager, calendar, or reminder applicati
   - **Emerald Canopy**: Ink-black pine base with phosphorescent mint and pale jade sand (Organic Biophilic).
   - **Glacial Frost**: Deep arctic navy base with stark icy-white and faint glacial blue crystal sand (Cold Crystalline).
 
+- **Pomodoro Focus Companion**:
+  - Micro-sprint focus timer (25m Focus, 5m Short Break, 15m Long Break, or custom).
+  - Circular SVG progress ring with glowing leading thumb, large tabular digits, and session/streak metrics.
+  - Completed focus sessions accrue directly to the active milestone goal.
+  - Daily focus streak tracking preserved locally.
+  - Procedural 3-tier harmonic meditation bell chime on completion.
+  - Native browser desktop notification when timer finishes while backgrounded.
+
 - **100% Local-First & PWA**:
   - Zero accounts, zero cloud servers, complete privacy.
   - One-click JSON backup export and import restore.
@@ -70,6 +78,7 @@ The product is **not** primarily a task manager, calendar, or reminder applicati
 
 | Shortcut | Action |
 |---|---|
+| <kbd>P</kbd> | Toggle Pomodoro Focus Companion |
 | <kbd>F</kbd> | Toggle Fullscreen ambient display |
 | <kbd>Z</kbd> | Manually toggle Zen Mode (hide/show chrome) |
 | <kbd>Space</kbd> / <kbd>M</kbd> | Toggle ambient audio (Sand trickle & tick) |

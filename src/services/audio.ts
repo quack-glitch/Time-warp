@@ -143,6 +143,47 @@ class ProceduralAudioEngine {
     } catch {}
   }
 
+  public playCompletionChime() {
+    this.initContext();
+    if (!this.ctx || !this.masterGain || this.ctx.state !== 'running') return;
+
+    try {
+      // 3-tier harmonic meditation bell chime (528Hz, 792Hz, 1056Hz)
+      const now = this.ctx.currentTime;
+      const harmonics = [
+        { freq: 528, gain: 0.18, decay: 1.8 },
+        { freq: 792, gain: 0.09, decay: 1.4 },
+        { freq: 1056, gain: 0.05, decay: 1.0 }
+      ];
+
+      harmonics.forEach(({ freq, gain: vol, decay }) => {
+        if (!this.ctx || !this.masterGain) return;
+        const osc = this.ctx.createOscillator();
+        const gainNode = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+
+        gainNode.gain.setValueAtTime(0.0001, now);
+        gainNode.gain.linearRampToValueAtTime(vol, now + 0.02);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, now + decay);
+
+        osc.connect(gainNode);
+        gainNode.connect(this.masterGain);
+
+        osc.onended = () => {
+          try {
+            osc.disconnect();
+            gainNode.disconnect();
+          } catch {}
+        };
+
+        osc.start(now);
+        osc.stop(now + decay);
+      });
+    } catch {}
+  }
+
   public suspend() {
     if (this.ctx && this.ctx.state === 'running') {
       this.ctx.suspend().catch(() => {});

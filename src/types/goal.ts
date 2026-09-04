@@ -20,6 +20,18 @@ export interface Goal {
   status: 'active' | 'completed' | 'archived';
   createdAt: string; // ISO 8601
   notes?: string;
+  pomodoroSessions?: number;
+}
+
+export interface PomodoroStreak {
+  currentStreak: number;
+  lastActiveDate: string; // YYYY-MM-DD
+}
+
+export interface PomodoroSettings {
+  focusMinutes: number;
+  shortBreakMinutes: number;
+  longBreakMinutes: number;
 }
 
 export interface TimeWarpState {
@@ -29,4 +41,6 @@ export interface TimeWarpState {
   soundEnabled: boolean;
   soundVolume: number;
   zenMode: boolean;
+  pomodoroStreak?: PomodoroStreak;
+  pomodoroSettings?: PomodoroSettings;
 }
