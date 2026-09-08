@@ -1,15 +1,19 @@
-const CACHE_NAME = 'timewarp-cache-v1';
-const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/hourglass.svg',
-  '/manifest.json'
-];
+const CACHE_NAME = 'timewarp-cache-v3';
 
 self.addEventListener('install', (event) => {
+  const scope = self.registration.scope;
+  const assetsToCache = [
+    scope,
+    `${scope}index.html`,
+    `${scope}hourglass.svg`,
+    `${scope}icon-192.png`,
+    `${scope}icon-512.png`,
+    `${scope}manifest.json`
+  ];
+
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
+      return cache.addAll(assetsToCache);
     })
   );
   self.skipWaiting();
@@ -34,7 +38,10 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   event.respondWith(
     caches.match(event.request).then((cached) => {
-      return cached || fetch(event.request).catch(() => caches.match('/index.html'));
+      return (
+        cached ||
+        fetch(event.request).catch(() => caches.match(`${self.registration.scope}index.html`))
+      );
     })
   );
 });
