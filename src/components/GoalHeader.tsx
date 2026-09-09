@@ -51,6 +51,7 @@ export const GoalHeader: React.FC<GoalHeaderProps> = ({ goal, theme, onEdit }) =
         <button
           className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded-full hover:bg-white/10 flex-shrink-0"
           title="Edit Goal"
+          aria-label="Edit Goal"
         >
           <Edit3 className="w-3.5 h-3.5" style={{ color: theme.textSecondary }} />
         </button>
