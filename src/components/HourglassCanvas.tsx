@@ -18,7 +18,7 @@ interface Grain {
   alpha: number;
 }
 
-export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
+export const HourglassCanvas: React.FC<HourglassCanvasProps> = React.memo(({
   progressPercent,
   remainingPercent,
   isExpired,
@@ -312,4 +312,4 @@ export const HourglassCanvas: React.FC<HourglassCanvasProps> = ({
       <canvas ref={canvasRef} className="block" />
     </div>
   );
-};
+});

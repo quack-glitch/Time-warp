@@ -32,6 +32,11 @@ export interface PomodoroSettings {
   focusMinutes: number;
   shortBreakMinutes: number;
   longBreakMinutes: number;
+  longBreakInterval?: number;
+  autoStart?: boolean;
+  alarmType?: 'none' | 'soft' | 'standard' | 'strong';
+  alarmVolume?: number;
+  notificationsEnabled?: boolean;
 }
 
 export interface TimeWarpState {

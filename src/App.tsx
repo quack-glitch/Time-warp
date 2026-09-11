@@ -2,11 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { loadState, saveState, DEFAULT_INITIAL_GOAL } from './services/storage';
 import { THEMES, ThemeId } from './types/theme';
 import { Goal, TimeWarpState } from './types/goal';
+import { FocusSettings } from './types/focus';
 import { useCountdown } from './hooks/useCountdown';
 import { useIdle } from './hooks/useIdle';
 import { usePomodoroTimer } from './hooks/usePomodoroTimer';
 import { calculateStreak } from './services/streak';
 import { audioEngine } from './services/audio';
+import { formatTimerMs } from './services/timer-format';
 import { HourglassCanvas } from './components/HourglassCanvas';
 import { CountdownDisplay } from './components/CountdownDisplay';
 import { GoalHeader } from './components/GoalHeader';
@@ -23,6 +25,12 @@ export const App: React.FC = () => {
   const [isPomodoroModalOpen, setIsPomodoroModalOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | undefined>(undefined);
   const [manualZen, setManualZen] = useState(false);
+
+  // Active Goal lookup
+  const activeGoal =
+    appState.goals.find((g) => g.id === appState.activeGoalId) ||
+    appState.goals[0] ||
+    DEFAULT_INITIAL_GOAL;
 
   const handlePomodoroSessionCompleted = useCallback((mode: string) => {
     if (mode === 'focus') {
@@ -45,9 +53,19 @@ export const App: React.FC = () => {
     }
   }, []);
 
+  const handleUpdateFocusSettings = useCallback((newSettings: FocusSettings) => {
+    setAppState((prev) => ({
+      ...prev,
+      pomodoroSettings: newSettings
+    }));
+  }, []);
+
   const pomodoro = usePomodoroTimer({
+    initialSettings: appState.pomodoroSettings,
     soundEnabled: appState.soundEnabled,
-    onSessionCompleted: handlePomodoroSessionCompleted
+    activeGoalId: activeGoal.id,
+    onSessionCompleted: handlePomodoroSessionCompleted,
+    onUpdateSettings: handleUpdateFocusSettings
   });
 
   const theme = THEMES[appState.theme] || THEMES.void;
@@ -56,14 +74,11 @@ export const App: React.FC = () => {
   // Active Zen mode is triggered by either idle timeout or manual 'Z' toggle
   const isZenActive = manualZen || isIdle;
 
-  // Active Goal lookup
-  const activeGoal =
-    appState.goals.find((g) => g.id === appState.activeGoalId) ||
-    appState.goals[0] ||
-    DEFAULT_INITIAL_GOAL;
-
   // Real-time Countdown hook
   const countdown = useCountdown(activeGoal.startedAt, activeGoal.deadline, appState.soundEnabled);
+
+  // Live formatted time for companion badges & Zen indicator
+  const formattedFocusTime = formatTimerMs(pomodoro.timeLeftMs, pomodoro.mode === 'stopwatch');
 
   // Sync state to LocalStorage
   useEffect(() => {
@@ -126,12 +141,37 @@ export const App: React.FC = () => {
     setManualZen((prev) => !prev);
   }, []);
 
-  // Keyboard Shortcuts: 'F' (Fullscreen), 'Z' (Zen Mode), 'Space' (Sound Toggle)
+  // Keyboard Shortcuts: 'F' (Fullscreen), 'Z' (Zen Mode), 'Space' (Sound Toggle), 'P' (Focus), '1'-'5' (Milestones), 'Esc' (Close modals)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
+      const target = e.target as HTMLElement | null;
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target?.tagName || '') || target?.isContentEditable) return;
 
-      // Space: Toggle Sound
+      if (e.key === 'Escape') {
+        if (isPomodoroModalOpen) {
+          setIsPomodoroModalOpen(false);
+          return;
+        }
+        if (isGoalModalOpen) {
+          setIsGoalModalOpen(false);
+          return;
+        }
+        if (isBackupModalOpen) {
+          setIsBackupModalOpen(false);
+          return;
+        }
+      }
+
+      // When Pomodoro modal is active, let the modal capture Space and R
+      if (isPomodoroModalOpen) {
+        if (e.key === 'p' || e.key === 'P') {
+          e.preventDefault();
+          setIsPomodoroModalOpen(false);
+        }
+        return;
+      }
+
+      // Space: Toggle Ambient Sound
       if (e.code === 'Space' || e.key === ' ') {
         e.preventDefault();
         toggleSound();
@@ -155,7 +195,7 @@ export const App: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [appState.goals, toggleSound, toggleZenMode, toggleFullscreen, cycleTheme]);
+  }, [isPomodoroModalOpen, isGoalModalOpen, isBackupModalOpen, appState.goals, toggleSound, toggleZenMode, toggleFullscreen, cycleTheme]);
 
   const handleSelectGoal = (id: string) => {
     setAppState((prev) => ({ ...prev, activeGoalId: id }));
@@ -239,7 +279,9 @@ export const App: React.FC = () => {
         <ZenControls
           theme={theme}
           soundEnabled={appState.soundEnabled}
-          isPomodoroActive={pomodoro.isRunning}
+          timerMode={pomodoro.mode}
+          timerStatus={pomodoro.status}
+          formattedTime={formattedFocusTime}
           onToggleSound={toggleSound}
           onCycleTheme={cycleTheme}
           onToggleFullscreen={toggleFullscreen}
@@ -247,6 +289,36 @@ export const App: React.FC = () => {
           onOpenPomodoro={() => setIsPomodoroModalOpen(true)}
         />
       </header>
+
+      {/* Subtle Minimal Zen Mode Active Indicator (Section 22 & 24) */}
+      {isZenActive && (pomodoro.status === 'running' || pomodoro.status === 'paused') && (
+        <button
+          onClick={() => setIsPomodoroModalOpen(true)}
+          className="fixed top-3 right-4 z-30 opacity-40 hover:opacity-100 transition-opacity font-mono text-[10px] sm:text-[11px] font-bold flex items-center gap-1.5 px-2.5 py-1 rounded-full border backdrop-blur-md cursor-pointer"
+          style={{
+            borderColor: theme.border,
+            backgroundColor: theme.cardBg,
+            color: theme.accent
+          }}
+          title="Focus Timer Active (Press P)"
+          aria-label="Focus Timer Active"
+        >
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${
+              pomodoro.status === 'running' ? 'bg-amber-400 animate-pulse' : 'bg-gray-400'
+            }`}
+          />
+          <span>
+            {pomodoro.status === 'paused' ? 'Ⅱ ' : '● '}
+            {pomodoro.mode === 'focus'
+              ? 'FOCUS'
+              : pomodoro.mode === 'stopwatch'
+              ? 'TIMER'
+              : 'BREAK'}{' '}
+            {formattedFocusTime}
+          </span>
+        </button>
+      )}
 
       {/* CENTER STAGE: Goal Title, Glass Hourglass, Bold Countdown */}
       <main
@@ -314,16 +386,26 @@ export const App: React.FC = () => {
         activeGoal={activeGoal}
         streakDays={appState.pomodoroStreak?.currentStreak || 0}
         mode={pomodoro.mode}
+        status={pomodoro.status}
         isRunning={pomodoro.isRunning}
+        isPaused={pomodoro.isPaused}
+        isCompleted={pomodoro.isCompleted}
         timeLeft={pomodoro.timeLeft}
+        timeLeftMs={pomodoro.timeLeftMs}
         totalDuration={pomodoro.totalDuration}
         progressPercent={pomodoro.progressPercent}
         durations={pomodoro.durations}
+        cycleSessions={pomodoro.cycleSessions}
+        sessionTarget={pomodoro.sessionTarget}
+        settings={pomodoro.settings}
         onClose={() => setIsPomodoroModalOpen(false)}
         onToggle={pomodoro.toggle}
         onReset={pomodoro.reset}
         onSwitchMode={pomodoro.switchMode}
+        onStartNextSession={pomodoro.startNextSession}
         onAdjustDuration={pomodoro.adjustDuration}
+        onUpdateSettings={pomodoro.updateSettings}
+        onSkipLongBreak={pomodoro.skipLongBreak}
       />
     </div>
   );

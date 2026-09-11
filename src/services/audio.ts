@@ -143,7 +143,8 @@ class ProceduralAudioEngine {
     } catch {}
   }
 
-  public playAlarm() {
+  public playAlarm(type: 'none' | 'soft' | 'standard' | 'strong' = 'standard', volume: number = 0.8) {
+    if (type === 'none') return;
     this.initContext();
     if (!this.ctx) return;
     if (this.ctx.state === 'suspended') {
@@ -152,21 +153,99 @@ class ProceduralAudioEngine {
 
     try {
       const now = this.ctx.currentTime;
-      // Classic Pomodoro digital alarm: 3 bursts of double-beeps followed by a sustained chime
+      const vol = Math.max(0, Math.min(1, volume));
+
+      if (type === 'soft') {
+        // Soft meditative double bell (528Hz Solfeggio + 660Hz)
+        const notes = [
+          { time: now + 0.0, freq: 528, dur: 1.4, peak: 0.3 * vol },
+          { time: now + 0.22, freq: 660, dur: 1.8, peak: 0.25 * vol }
+        ];
+
+        notes.forEach(({ time, freq, dur, peak }) => {
+          if (!this.ctx) return;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, time);
+
+          gain.gain.setValueAtTime(0.0001, time);
+          gain.gain.linearRampToValueAtTime(peak, time + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.onended = () => {
+            try {
+              osc.disconnect();
+              gain.disconnect();
+            } catch {}
+          };
+
+          osc.start(time);
+          osc.stop(time + dur);
+        });
+        return;
+      }
+
+      if (type === 'strong') {
+        // Assertive 3-burst chime followed by resonant chord
+        const beeps = [
+          { time: now + 0.00, freq: 880, dur: 0.10, peak: 0.4 * vol, type: 'triangle' as OscillatorType },
+          { time: now + 0.12, freq: 1320, dur: 0.14, peak: 0.4 * vol, type: 'triangle' as OscillatorType },
+          { time: now + 0.32, freq: 880, dur: 0.10, peak: 0.4 * vol, type: 'triangle' as OscillatorType },
+          { time: now + 0.44, freq: 1320, dur: 0.14, peak: 0.4 * vol, type: 'triangle' as OscillatorType },
+          { time: now + 0.64, freq: 880, dur: 0.10, peak: 0.4 * vol, type: 'triangle' as OscillatorType },
+          { time: now + 0.76, freq: 1320, dur: 0.14, peak: 0.4 * vol, type: 'triangle' as OscillatorType },
+          { time: now + 1.00, freq: 1046, dur: 1.4, peak: 0.35 * vol, type: 'sine' as OscillatorType },
+          { time: now + 1.02, freq: 1318, dur: 1.4, peak: 0.25 * vol, type: 'sine' as OscillatorType }
+        ];
+
+        beeps.forEach(({ time, freq, dur, peak, type: oscType }) => {
+          if (!this.ctx) return;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = oscType;
+          osc.frequency.setValueAtTime(freq, time);
+
+          gain.gain.setValueAtTime(0.0001, time);
+          gain.gain.linearRampToValueAtTime(peak, time + 0.015);
+          gain.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.onended = () => {
+            try {
+              osc.disconnect();
+              gain.disconnect();
+            } catch {}
+          };
+
+          osc.start(time);
+          osc.stop(time + dur);
+        });
+        return;
+      }
+
+      // Default / Standard: 3 double-beeps followed by a sustained chime
       const beeps = [
-        { time: now + 0.00, freq: 880, dur: 0.10 },
-        { time: now + 0.14, freq: 1175, dur: 0.14 },
+        { time: now + 0.00, freq: 880, dur: 0.10, peak: 0.35 * vol },
+        { time: now + 0.14, freq: 1175, dur: 0.14, peak: 0.35 * vol },
 
-        { time: now + 0.40, freq: 880, dur: 0.10 },
-        { time: now + 0.54, freq: 1175, dur: 0.14 },
+        { time: now + 0.40, freq: 880, dur: 0.10, peak: 0.35 * vol },
+        { time: now + 0.54, freq: 1175, dur: 0.14, peak: 0.35 * vol },
 
-        { time: now + 0.80, freq: 880, dur: 0.10 },
-        { time: now + 0.94, freq: 1175, dur: 0.14 },
+        { time: now + 0.80, freq: 880, dur: 0.10, peak: 0.35 * vol },
+        { time: now + 0.94, freq: 1175, dur: 0.14, peak: 0.35 * vol },
 
-        { time: now + 1.25, freq: 1046, dur: 1.2 }
+        { time: now + 1.25, freq: 1046, dur: 1.2, peak: 0.3 * vol }
       ];
 
-      beeps.forEach(({ time, freq, dur }) => {
+      beeps.forEach(({ time, freq, dur, peak }) => {
         if (!this.ctx) return;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
@@ -175,7 +254,7 @@ class ProceduralAudioEngine {
         osc.frequency.setValueAtTime(freq, time);
 
         gain.gain.setValueAtTime(0.0001, time);
-        gain.gain.linearRampToValueAtTime(0.35, time + 0.015);
+        gain.gain.linearRampToValueAtTime(peak, time + 0.015);
         gain.gain.exponentialRampToValueAtTime(0.0001, time + dur);
 
         osc.connect(gain);
@@ -192,6 +271,10 @@ class ProceduralAudioEngine {
         osc.stop(time + dur);
       });
     } catch {}
+  }
+
+  public testAlarm(type: 'none' | 'soft' | 'standard' | 'strong' = 'standard', volume: number = 0.8) {
+    this.playAlarm(type, volume);
   }
 
   public playCompletionChime() {
