@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { FocusMode, TimerStatus, PomodoroDurations, FocusSettings } from '../types/focus';
+import { FocusMode, TimerStatus, PomodoroDurations, FocusSettings, FocusSession } from '../types/focus';
 import { audioEngine } from '../services/audio';
 import { sendFocusNotification } from '../services/notifications';
 import {
@@ -7,6 +7,13 @@ import {
   saveActiveTimer,
   loadActiveTimer
 } from '../services/storage';
+import {
+  loadFocusSessions,
+  recordFocusSession,
+  calculateTodayFocus,
+  calculateSevenDayHistory,
+  FOCUS_HISTORY_STORAGE_KEY
+} from '../services/focus-history';
 import {
   startCountdown,
   getRemainingMs,
@@ -106,6 +113,8 @@ export function usePomodoroTimer({
           initStatus = 'completed';
           initDisplayMs = 0;
           initProgress = 100;
+          initStartTs = initialActiveState.startTimestamp ?? (initialActiveState.targetTimestamp - totalMs);
+          initTargetTs = initialActiveState.targetTimestamp;
         } else {
           initStatus = 'running';
           initStartTs = initialActiveState.startTimestamp;
@@ -135,6 +144,17 @@ export function usePomodoroTimer({
   const [stopwatchStartTimestamp, setStopwatchStartTimestamp] = useState<number | null>(initStopwatchStartTs);
   const [pausedElapsedMs, setPausedElapsedMs] = useState<number | null>(initPausedElapsed);
   const [cycleSessions, setCycleSessions] = useState<number>(initCycle);
+  const [focusSessions, setFocusSessions] = useState<FocusSession[]>(() => loadFocusSessions());
+
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === FOCUS_HISTORY_STORAGE_KEY) {
+        setFocusSessions(loadFocusSessions());
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
 
   // High-precision display values driven by Date.now()
   const [displayRemainingMs, setDisplayRemainingMs] = useState<number>(initDisplayMs);
@@ -239,37 +259,58 @@ export function usePomodoroTimer({
     setDisplayRemainingMs(0);
     setProgressPercent(100);
 
-    // 1. Play Alarm independently of ambient audio
-    audioEngine.playAlarm(s.settings.alarmType, s.settings.alarmVolume);
+    // 1. Play Alarm independently of ambient audio (only when completed in real-time, avoid startling user on startup recovery)
+    const isOfflineExpired = s.targetTimestamp !== null && s.targetTimestamp < Date.now() - 3000;
+    if (!isOfflineExpired) {
+      audioEngine.playAlarm(s.settings.alarmType, s.settings.alarmVolume);
 
-    // 2. Browser Desktop Notification (if enabled and granted)
-    if (s.settings.notificationsEnabled) {
-      const title =
-        completedMode === 'focus'
-          ? 'FOCUS COMPLETE'
-          : completedMode === 'shortBreak'
-          ? 'BREAK COMPLETE'
-          : 'LONG BREAK COMPLETE';
+      // 2. Browser Desktop Notification (if enabled and granted)
+      if (s.settings.notificationsEnabled) {
+        const title =
+          completedMode === 'focus'
+            ? 'FOCUS COMPLETE'
+            : completedMode === 'shortBreak'
+            ? 'BREAK COMPLETE'
+            : 'LONG BREAK COMPLETE';
 
-      const durationMinutes =
-        completedMode === 'focus'
-          ? s.durations.focus
-          : completedMode === 'shortBreak'
-          ? s.durations.shortBreak
-          : s.durations.longBreak;
+        const durationMinutes =
+          completedMode === 'focus'
+            ? s.durations.focus
+            : completedMode === 'shortBreak'
+            ? s.durations.shortBreak
+            : s.durations.longBreak;
 
-      const body =
-        completedMode === 'focus'
-          ? `${durationMinutes} minute session finished.`
-          : `${durationMinutes} minute break finished.`;
+        const body =
+          completedMode === 'focus'
+            ? `${durationMinutes} minute session finished.`
+            : `${durationMinutes} minute break finished.`;
 
-      sendFocusNotification(title, { body });
+        sendFocusNotification(title, { body });
+      }
     }
 
     // 3. Increment cycle count and invoke session callback
     const nextCycle = calculateNextCycle(completedMode, s.cycleSessions);
     setCycleSessions(nextCycle);
     if (completedMode === 'focus') {
+      const now = Date.now();
+      const durMs = (s.durations.focus ?? 25) * 60 * 1000;
+      const actualCompletedAt = s.targetTimestamp && s.targetTimestamp <= now ? s.targetTimestamp : now;
+      const startTs = s.startTimestamp ?? (actualCompletedAt - durMs);
+      const goalId = s.activeGoalId || initialActiveState?.linkedMilestoneId;
+      const newSession: FocusSession = {
+        id:
+          typeof crypto !== 'undefined' && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `fs-${actualCompletedAt}-${Math.random().toString(36).slice(2, 8)}`,
+        mode: 'focus',
+        startedAt: startTs,
+        completedAt: actualCompletedAt,
+        durationMs: durMs,
+        ...(goalId ? { goalId } : {})
+      };
+      const updated = recordFocusSession(newSession);
+      setFocusSessions(updated);
       onSessionCompletedRef.current?.('focus');
     } else if (completedMode === 'longBreak') {
       onSessionCompletedRef.current?.('longBreak');
@@ -807,6 +848,15 @@ export function usePomodoroTimer({
   const currentDurationMin = mode === 'stopwatch' ? 0 : (durations[mode] ?? 25);
   const totalDuration = mode === 'stopwatch' ? 0 : currentDurationMin * 60;
 
+  // Live running focus elapsed ms (contributes to Today summary live, Section 38.1)
+  const runningFocusElapsedMs =
+    mode === 'focus' && (status === 'running' || status === 'paused')
+      ? Math.max(0, (durations.focus * 60 * 1000) - displayRemainingMs)
+      : 0;
+
+  const todayFocusSummary = calculateTodayFocus(focusSessions, runningFocusElapsedMs);
+  const sevenDayHistory = calculateSevenDayHistory(focusSessions);
+
   return {
     mode,
     status,
@@ -821,6 +871,9 @@ export function usePomodoroTimer({
     cycleSessions,
     sessionTarget: settings.longBreakInterval,
     settings,
+    focusSessions,
+    todayFocusSummary,
+    sevenDayHistory,
     start,
     pause,
     toggle,

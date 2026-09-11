@@ -398,6 +398,8 @@ export const App: React.FC = () => {
         cycleSessions={pomodoro.cycleSessions}
         sessionTarget={pomodoro.sessionTarget}
         settings={pomodoro.settings}
+        todayFocusSummary={pomodoro.todayFocusSummary}
+        sevenDayHistory={pomodoro.sevenDayHistory}
         onClose={() => setIsPomodoroModalOpen(false)}
         onToggle={pomodoro.toggle}
         onReset={pomodoro.reset}

@@ -181,3 +181,12 @@ export function loadActiveTimer(): ActiveTimerPersistedState | null {
 export function clearActiveTimer(): void {
   saveActiveTimer(null);
 }
+
+export {
+  FOCUS_HISTORY_STORAGE_KEY,
+  loadFocusSessions,
+  saveFocusSessions,
+  recordFocusSession,
+  clearFocusSessions,
+  pruneOldFocusSessions
+} from './focus-history';

@@ -35,3 +35,30 @@ export interface ActiveTimerPersistedState {
   linkedMilestoneId?: string;
   savedAt: number;
 }
+
+export interface FocusSession {
+  id: string;
+  mode: 'focus';
+  startedAt: number;     // epoch ms
+  completedAt: number;   // epoch ms
+  durationMs: number;
+  goalId?: string;
+}
+
+export interface DayFocusSummary {
+  dateStr: string;      // YYYY-MM-DD
+  dayLabel: string;     // MON, TUE, etc.
+  durationMs: number;
+  sessionCount: number;
+  isToday: boolean;
+}
+
+export interface FocusHistorySummary {
+  todayDurationMs: number;
+  todaySessionCount: number;
+  todayFormatted: string;
+  sevenDays: DayFocusSummary[];
+  sevenDayTotalMs: number;
+  sevenDaySessionCount: number;
+  sevenDayTotalFormatted: string;
+}

@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { ThemeColors } from '../types/theme';
 import { Goal } from '../types/goal';
-import { FocusMode, TimerStatus, PomodoroDurations, FocusSettings } from '../types/focus';
+import { FocusMode, TimerStatus, PomodoroDurations, FocusSettings, DayFocusSummary } from '../types/focus';
 import { TimerDisplay } from './TimerDisplay';
 import { audioEngine } from '../services/audio';
 import { requestNotificationPermission, isNotificationSupported } from '../services/notifications';
+import {
+  loadFocusSessions,
+  calculateTodayFocus,
+  calculateSevenDayHistory,
+  formatFocusDuration
+} from '../services/focus-history';
 import {
   X,
   Play,
@@ -43,6 +49,13 @@ interface PomodoroModalProps {
   cycleSessions: number;
   sessionTarget: number;
   settings: FocusSettings;
+  todayFocusSummary?: { durationMs: number; sessionCount: number; formatted: string };
+  sevenDayHistory?: {
+    sevenDays: DayFocusSummary[];
+    totalMs: number;
+    totalSessionCount: number;
+    totalFormatted: string;
+  };
   onClose: () => void;
   onToggle: () => void;
   onReset: () => void;
@@ -71,6 +84,8 @@ export const PomodoroModal: React.FC<PomodoroModalProps> = ({
   cycleSessions,
   sessionTarget,
   settings,
+  todayFocusSummary,
+  sevenDayHistory,
   onClose,
   onToggle,
   onReset,
@@ -81,6 +96,7 @@ export const PomodoroModal: React.FC<PomodoroModalProps> = ({
   onSkipLongBreak
 }) => {
   const [showSettingsDrawer, setShowSettingsDrawer] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [testSoundPlaying, setTestSoundPlaying] = useState(false);
 
   // Modal Keyboard Shortcuts: Space (Toggle), R (Reset), Esc (Close)
@@ -107,6 +123,38 @@ export const PomodoroModal: React.FC<PomodoroModalProps> = ({
     return () => window.removeEventListener('keydown', handleModalKeyDown);
   }, [isOpen, onToggle, onReset, onClose]);
 
+  // Fallback focus summary calculation if not provided via props
+  const fallbackSummary = React.useMemo(() => {
+    if (todayFocusSummary && sevenDayHistory) return null;
+    const sessions = loadFocusSessions();
+    const runningElapsed =
+      mode === 'focus' && (status === 'running' || status === 'paused')
+        ? Math.max(0, durations.focus * 60 * 1000 - timeLeftMs)
+        : 0;
+    return {
+      today: calculateTodayFocus(sessions, runningElapsed),
+      sevenDay: calculateSevenDayHistory(sessions)
+    };
+  }, [todayFocusSummary, sevenDayHistory, mode, status, durations.focus, timeLeftMs]);
+
+  const activeTodaySummary = todayFocusSummary || fallbackSummary?.today || {
+    durationMs: 0,
+    sessionCount: 0,
+    formatted: '0h 00m focused'
+  };
+
+  const activeSevenDayHistory = sevenDayHistory || fallbackSummary?.sevenDay || {
+    sevenDays: [],
+    totalMs: 0,
+    totalSessionCount: 0,
+    totalFormatted: '0h 00m'
+  };
+
+  const maxSevenDayMs = Math.max(
+    ...activeSevenDayHistory.sevenDays.map((d) => d.durationMs),
+    1
+  );
+
   if (!isOpen) return null;
 
   // Circular SVG dimensions
@@ -126,7 +174,7 @@ export const PomodoroModal: React.FC<PomodoroModalProps> = ({
   const isStopwatch = mode === 'stopwatch';
 
   const modeLabels: Record<FocusMode, { title: string; subtitle: string }> = {
-    focus: { title: 'FOCUS TIME', subtitle: 'Make the next minutes count' },
+    focus: { title: 'FOCUS TIME', subtitle: 'Time to focus' },
     shortBreak: { title: 'SHORT BREAK', subtitle: 'Time to rest and recharge' },
     longBreak: { title: 'LONG BREAK', subtitle: 'Deep restorative pause' },
     stopwatch: { title: 'STOPWATCH', subtitle: 'Open-ended active session' }
@@ -387,15 +435,6 @@ export const PomodoroModal: React.FC<PomodoroModalProps> = ({
           </div>
         </div>
 
-        {/* Subtle Milestone Linkage (Section 19 & 31) */}
-        <div className="w-full flex items-center justify-center gap-1.5 mb-3 text-center">
-          <span className="text-[10px] font-mono tracking-wide opacity-50 uppercase" style={{ color: theme.textSecondary }}>
-            linked to:
-          </span>
-          <span className="text-[11px] font-mono font-bold tracking-wide truncate max-w-[260px] underline underline-offset-2" style={{ color: theme.accent }}>
-            {activeGoal.title}
-          </span>
-        </div>
         {isCompleted ? (
           <div
             className="w-full my-2 p-4 rounded-2xl border text-center flex flex-col items-center justify-center gap-2.5 animate-fadeIn"
@@ -876,13 +915,145 @@ export const PomodoroModal: React.FC<PomodoroModalProps> = ({
           </div>
         )}
 
-        {/* Milestone Linkage Footer */}
-        <p
-          className="text-[10px] font-sans tracking-wide opacity-50 mt-3 text-center"
-          style={{ color: theme.textSecondary }}
+        {/* Focus Time Tracking (Section 38) */}
+        <div
+          className="w-full mt-3.5 p-3 sm:p-4 rounded-2xl border text-center flex flex-col items-center gap-1.5 transition-all relative z-10"
+          style={{
+            borderColor: theme.border,
+            backgroundColor: theme.cardBg
+          }}
         >
-          Linked to: <span className="font-bold underline">{activeGoal.title}</span>
-        </p>
+          <span
+            className="text-[9px] font-mono font-bold tracking-widest uppercase opacity-60"
+            style={{ color: theme.textSecondary }}
+          >
+            TODAY
+          </span>
+          <div
+            className="text-xs sm:text-sm font-mono font-bold tracking-wide"
+            style={{ color: theme.textPrimary }}
+          >
+            {activeTodaySummary.formatted} • {activeTodaySummary.sessionCount}{' '}
+            {activeTodaySummary.sessionCount === 1 ? 'session' : 'sessions'}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowHistory((prev) => !prev)}
+            className="mt-1 text-[10px] font-mono uppercase tracking-wider px-3.5 py-1 rounded-lg border hover:bg-white/10 active:scale-95 transition-all cursor-pointer"
+            style={{
+              borderColor: theme.border,
+              color: theme.accent
+            }}
+            aria-expanded={showHistory}
+          >
+            {showHistory ? '[ HIDE 7-DAY HISTORY ]' : '[ VIEW 7-DAY HISTORY ]'}
+          </button>
+
+          {showHistory && (
+            <div
+              className="w-full mt-2.5 pt-3 border-t text-left flex flex-col gap-1.5 animate-fadeIn"
+              style={{ borderColor: theme.border }}
+            >
+              <div
+                className="text-[10px] font-mono uppercase tracking-wider font-bold opacity-60 mb-0.5"
+                style={{ color: theme.textSecondary }}
+              >
+                RECENT 7 DAYS
+              </div>
+
+              {activeSevenDayHistory.sevenDays.map((day) => {
+                const barPercent =
+                  day.durationMs > 0
+                    ? Math.max(8, Math.round((day.durationMs / maxSevenDayMs) * 100))
+                    : 0;
+                return (
+                  <div
+                    key={day.dateStr}
+                    className="w-full flex items-center justify-between text-xs font-mono py-0.5"
+                  >
+                    <span
+                      className={`w-9 text-left font-bold ${
+                        day.isToday ? 'opacity-100' : 'opacity-70'
+                      }`}
+                      style={{ color: day.isToday ? theme.accent : theme.textSecondary }}
+                    >
+                      {day.dayLabel}
+                    </span>
+                    <div className="flex-1 mx-3 h-2 bg-black/40 rounded-full overflow-hidden border border-white/5">
+                      <div
+                        className="h-full rounded-full transition-all duration-300"
+                        style={{
+                          width: `${barPercent}%`,
+                          backgroundColor: day.isToday
+                            ? theme.accent
+                            : 'rgba(255, 255, 255, 0.4)',
+                          boxShadow:
+                            day.isToday && day.durationMs > 0
+                              ? `0 0 6px ${theme.accentGlow}`
+                              : 'none'
+                        }}
+                      />
+                    </div>
+                    <span
+                      className="w-16 text-right tabular-nums opacity-90"
+                      style={{ color: theme.textPrimary }}
+                    >
+                      {formatFocusDuration(day.durationMs)}
+                    </span>
+                  </div>
+                );
+              })}
+
+              <div
+                className="w-full mt-2 pt-2.5 border-t flex items-center justify-between text-xs font-mono"
+                style={{ borderColor: theme.border }}
+              >
+                <span
+                  className="text-[10px] uppercase tracking-wider font-bold opacity-70"
+                  style={{ color: theme.textSecondary }}
+                >
+                  7-DAY TOTAL
+                </span>
+                <span
+                  className="font-bold tabular-nums"
+                  style={{ color: theme.textPrimary }}
+                >
+                  {activeSevenDayHistory.totalFormatted} • {activeSevenDayHistory.totalSessionCount}{' '}
+                  {activeSevenDayHistory.totalSessionCount === 1 ? 'session' : 'sessions'}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Milestone Linkage Footer */}
+        <div
+          className="w-full flex items-center justify-center mt-3.5 pt-2 text-center relative z-10"
+        >
+          <div
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-mono backdrop-blur-sm transition-all shadow-sm"
+            style={{
+              borderColor: theme.border,
+              backgroundColor: 'rgba(255, 255, 255, 0.03)'
+            }}
+          >
+            <Target className="w-3 h-3 flex-shrink-0" style={{ color: theme.accent }} />
+            <span
+              className="tracking-wider uppercase opacity-60 font-semibold"
+              style={{ color: theme.textSecondary }}
+            >
+              LINKED TO:
+            </span>
+            <span
+              className="font-bold tracking-wide truncate max-w-[260px] underline underline-offset-2 cursor-default"
+              style={{ color: theme.accent }}
+              title={activeGoal.title}
+            >
+              {activeGoal.title || 'Current Goal'}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );
