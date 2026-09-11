@@ -6,7 +6,7 @@ const ACTIVE_TIMER_STORAGE_KEY = 'timewarp_active_timer_v1';
 
 export const DEFAULT_INITIAL_GOAL: Goal = {
   id: 'goal-genesis',
-  title: 'Master Advanced Agentic AI & Ship Time Warp',
+  title: '"Goals are dreams without deadlines"',
   startedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
   deadline: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString(),
   calendarType: 'AD',
@@ -100,11 +100,18 @@ export function loadState(): TimeWarpState {
     const validThemes = ['parchment', 'void', 'neon', 'solar', 'cherry', 'emerald', 'frost'];
     const validatedSettings = validateFocusSettings(parsed.pomodoroSettings);
 
+    const goals = parsed.goals.slice(0, 5).map((g: Goal) => {
+      if (g.id === 'goal-genesis' && g.title === 'Master Advanced Agentic AI & Ship Time Warp') {
+        return { ...g, title: '"Goals are dreams without deadlines"' };
+      }
+      return g;
+    });
+
     return {
       ...DEFAULT_STATE,
       ...parsed,
       theme: validThemes.includes(parsed.theme) ? parsed.theme : 'void',
-      goals: parsed.goals.slice(0, 5),
+      goals,
       pomodoroSettings: validatedSettings
     };
   } catch (err) {
